@@ -183,6 +183,7 @@ body{
   padding:22px 30px;border:1px solid #0af4;border-radius:4px;
   font-family:'Orbitron',monospace;z-index:50;max-width:88vw;
   box-shadow:0 0 40px #0af3;
+  display:block;
 }
 #overlay h1{font-size:18px;color:#0ef;margin-bottom:5px;
   text-shadow:0 0 20px #0ef,0 0 40px #08f;letter-spacing:3px;}
@@ -220,7 +221,7 @@ body{
   <div class="hi"><div class="hl">TIME</div><div class="hv" id="timeDisplay">400</div></div>
   <div class="hi"><div class="hl">LIVES</div><div class="hv" id="livesDisplay">×3</div></div>
 </div>
-<canvas id="gameCanvas"></canvas>
+<canvas id="gameCanvas" width="820" height="320"></canvas>
 <div id="controls">
   <!-- LEFT: D-pad -->
   <div id="dpad">
@@ -262,19 +263,19 @@ body{
 function resizeGame(){
   const wrapper = document.getElementById('game-wrapper');
   if(!wrapper) return;
-  const hud = document.getElementById('hud');
+  const hud      = document.getElementById('hud');
   const controls = document.getElementById('controls');
-  const totalH = wrapper.clientHeight || window.innerHeight;
-  const hudH = hud ? hud.offsetHeight : 28;
-  const ctrlH = controls ? controls.offsetHeight : 62;
-  const canvasH = Math.max(200, totalH - hudH - ctrlH);
-  const canvasW = wrapper.clientWidth || window.innerWidth;
-  // Set canvas resolution to match display size for crisp rendering
-  canvas.width  = canvasW;
-  canvas.height = canvasH;
-  // Update game constants
-  window._W = canvasW;
-  window._H = canvasH;
+  const totalH   = window.innerHeight || wrapper.clientHeight || 500;
+  const totalW   = window.innerWidth  || wrapper.clientWidth  || 820;
+  const hudH     = hud      ? (hud.offsetHeight      || 26)  : 26;
+  const ctrlH    = controls ? (controls.offsetHeight  || 100) : 100;
+  const canvasH  = Math.max(180, totalH - hudH - ctrlH);
+  const canvasW  = Math.max(400, totalW);
+  if(canvas.width !== canvasW || canvas.height !== canvasH){
+    canvas.width  = canvasW;
+    canvas.height = canvasH;
+    GH = getGH();
+  }
 }
 
 // Fullscreen request
@@ -299,10 +300,7 @@ function lockLandscape(){
 
 window.addEventListener('resize', ()=>{
   resizeGame();
-  // Rebuild level geometry after resize since GH changed
-  if(typeof buildLevel==='function' && typeof lvl!=='undefined'){
-    setTimeout(()=>{ buildLevel(lvl); }, 80);
-  }
+  GH = getGH();
 });
 window.addEventListener('orientationchange', ()=>{ setTimeout(resizeGame, 200); });
 document.addEventListener('fullscreenchange', ()=>{ setTimeout(resizeGame, 100); });
@@ -481,7 +479,8 @@ if(analogCanvas){
   analogCanvas.addEventListener('mouseup',  onAEnd);
   analogCanvas.addEventListener('mouseleave',onAEnd);
 }
-(function analogLoop(){ drawAnalog(); requestAnimationFrame(analogLoop); })();
+// Analog draw loop - safe start
+if(typeof analogCanvas!=='undefined'&&analogCanvas){ (function analogLoop(){ drawAnalog(); requestAnimationFrame(analogLoop); })(); }
 
 
 // ── CONSTANTS ────────────────────────────────────────────────
@@ -619,6 +618,7 @@ const ENEMY_TEMPLATES={
 
 // ── BUILD LEVEL ───────────────────────────────────────────────
 function buildLevel(n){
+  GH=getGH(); // always recalculate before building
   const spec=LEVELS[n];
   TH=themes[n-1];
   platforms=[];enemies=[];coins_arr=[];qblocks=[];pipes=[];
@@ -1437,6 +1437,7 @@ function playerDie(){
   }
 }
 function resetPlayer(){
+  GH=getGH();
   if(checkpoint.saved){P.x=checkpoint.x;P.y=checkpoint.y;camX=Math.max(0,checkpoint.camX-60);}
   else{P.x=100;P.y=GH-60;camX=0;}
   P.vx=0;P.vy=0;P.onGround=false;P.dead=false;P.deadTimer=0;
@@ -1522,6 +1523,8 @@ function showBanner(n,cb){
 function nextLevel(){
   if(lvl>=5){
     gameState='win';
+    overlay.style.display='block';
+    overlay.style.visibility='visible';
     overlay.innerHTML=`<h1>VICTORY!</h1><div class="sub">BY ELVANPRMN</div><div class="info">SCORE: ${String(score).padStart(6,'0')}<br>ALL 5 LEVELS CONQUERED!</div><div class="start">TAP / ENTER TO PLAY AGAIN</div>`;
     overlay.style.display='block';showBanner(6);return;
   }
@@ -1532,24 +1535,42 @@ function nextLevel(){
 function triggerGameOver(){
   setTimeout(()=>{
     gameState='gameover';
+    overlay.style.display='block';
+    overlay.style.visibility='visible';
     overlay.innerHTML=`<h1>GAME OVER</h1><div class="sub">BY ELVANPRMN</div><div class="info">SCORE: ${String(score).padStart(6,'0')}</div><div class="start">TAP / ENTER TO RETRY</div>`;
     overlay.style.display='block';Audio.sfxGameover();
   },1400);
 }
 function startGame(){
   if(!['start','gameover','win'].includes(gameState))return;
+  // Resize canvas first to get correct GH
+  resizeGame();
   score=0;coins=0;lives=3;gameTime=400;lvl=1;jumpConsumed=false;
   PSTATS.hp=10;PSTATS.maxHp=10;PSTATS.mana=10;PSTATS.atk=3;
-  buildLevel(1);resetPlayer();gameState='play';
-  overlay.style.display='none';showBanner(1);
-  Audio.init();Audio.startMusic('main');
+  SS.active=false;SS.timer=0;
+  buildLevel(1);
+  resetPlayer();
+  gameState='play';
+  overlay.style.display='none';
+  overlay.style.visibility='hidden';
+  showBanner(1);
+  try{ Audio.init(); Audio.startMusic('main'); }catch(e){}
 }
 function toggleMute(){
   audioMuted=!audioMuted;
   document.getElementById('btn-mute').textContent=audioMuted?'🔇':'🔊';
   audioMuted?Audio.stopMusic():Audio.startMusic(SS.active?'ss':'main');
 }
-canvas.addEventListener('touchstart',()=>{Audio.resume&&Audio.resume();startGame();},{passive:true});
+canvas.addEventListener('touchstart',()=>{
+  try{ Audio.resume&&Audio.resume(); }catch(e){}
+  startGame();
+},{passive:true});
+// Also tap overlay to start
+document.getElementById('overlay').addEventListener('touchstart',()=>{
+  try{ Audio.resume&&Audio.resume(); }catch(e){}
+  startGame();
+},{passive:true});
+document.getElementById('overlay').addEventListener('click',startGame);
 
 // ── AUDIO ENGINE ──────────────────────────────────────────────
 const Audio=(()=>{
