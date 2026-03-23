@@ -68,29 +68,31 @@ body{
 /* ── HUD ── */
 #hud{
   width:100%;
-  display:flex;
+  display:flex !important;
+  visibility:visible !important;
   justify-content:space-between;
   align-items:center;
-  padding:2px 12px;
-  background:rgba(0,0,0,0.92);
-  border-bottom:1px solid #0af3;
+  padding:3px 14px;
+  background:rgba(0,0,0,0.95);
+  border-bottom:2px solid rgba(0,180,255,0.5);
   flex-shrink:0;
-  gap:6px;
-  /* safe area for notch */
-  padding-left:max(12px, env(safe-area-inset-left));
-  padding-right:max(12px, env(safe-area-inset-right));
+  gap:8px;
+  min-height:26px;
+  z-index:10;
+  padding-left:max(14px, env(safe-area-inset-left));
+  padding-right:max(14px, env(safe-area-inset-right));
 }
-.hi{display:flex;flex-direction:column;align-items:center;gap:0px;}
-.hl{font-size:5px;color:#0af8;letter-spacing:1px;font-family:'Orbitron',monospace;}
-.hv{font-size:8px;color:#0fd;text-shadow:0 0 6px #0fd;font-family:'Orbitron',monospace;}
+.hi{display:flex;flex-direction:column;align-items:center;gap:0px;min-width:28px;}
+.hl{font-size:6px;color:#0af;letter-spacing:1px;font-family:'Orbitron',monospace;white-space:nowrap;}
+.hv{font-size:10px;color:#0fd;text-shadow:0 0 8px #0fd;font-family:'Orbitron',monospace;white-space:nowrap;}
 
 #hp-bar-wrap{display:flex;align-items:center;gap:3px;min-width:100px;flex:0 1 160px;}
-#hp-label{font-size:6px;color:#f44;font-family:'Orbitron',monospace;white-space:nowrap;}
-#hp-bar-bg{flex:1;height:7px;background:#300;border:1px solid #f446;border-radius:3px;overflow:hidden;}
+#hp-label{font-size:7px;color:#f55;font-family:'Orbitron',monospace;white-space:nowrap;font-weight:bold;}
+#hp-bar-bg{flex:1;height:9px;background:#300;border:1px solid #f44;border-radius:3px;overflow:hidden;}
 #hp-bar{height:100%;background:linear-gradient(90deg,#f00,#f80);border-radius:3px;transition:width 0.2s;}
 #mana-bar-wrap{display:flex;align-items:center;gap:3px;min-width:70px;flex:0 1 100px;}
-#mana-label{font-size:6px;color:#48f;font-family:'Orbitron',monospace;white-space:nowrap;}
-#mana-bar-bg{flex:1;height:7px;background:#003;border:1px solid #48f6;border-radius:3px;overflow:hidden;}
+#mana-label{font-size:7px;color:#5af;font-family:'Orbitron',monospace;white-space:nowrap;font-weight:bold;}
+#mana-bar-bg{flex:1;height:9px;background:#003;border:1px solid #48f;border-radius:3px;overflow:hidden;}
 #mana-bar{height:100%;background:linear-gradient(90deg,#00f,#08f);border-radius:3px;transition:width 0.2s;}
 
 /* ── CANVAS: takes all remaining vertical space ── */
@@ -195,7 +197,7 @@ body{
   <div id="hp-bar-wrap"><div id="hp-label">HP</div><div id="hp-bar-bg"><div id="hp-bar" style="width:100%"></div></div><span class="hv" id="hpNum" style="font-size:8px;min-width:28px">10/10</span></div>
   <div id="mana-bar-wrap"><div id="mana-label">MP</div><div id="mana-bar-bg"><div id="mana-bar" style="width:100%"></div></div></div>
   <div class="hi"><div class="hl">LVL</div><div class="hv" id="levelDisplay">1</div></div>
-  <div class="hi"><div class="hl">LOGO</div><div class="hv" id="coinsDisplay">×00</div></div>
+  <div class="hi"><div class="hl">COIN</div><div class="hv" id="coinsDisplay">×00</div></div>
   <div class="hi"><div class="hl">TIME</div><div class="hv" id="timeDisplay">400</div></div>
   <div class="hi"><div class="hl">LIVES</div><div class="hv" id="livesDisplay">×3</div></div>
 </div>
@@ -207,7 +209,7 @@ body{
   </div>
   <div id="action-btns">
     <div class="btn btn-run" id="btn-run">RUN</div>
-    <div class="btn btn-atk" id="btn-atk">⚔️ATK</div>
+    <div class="btn btn-atk" id="btn-atk">🔫FIRE</div>
     <div class="btn btn-jump" id="btn-jump">JUMP</div>
     <div class="btn btn-mute" id="btn-mute" onclick="toggleMute()">🔊</div>
   </div>
@@ -219,7 +221,7 @@ body{
   <div class="sub">BY ELVANPRMN</div>
   <div class="info">
     ◀ ▶ MOVE &nbsp;|&nbsp; JUMP : LOMPAT<br>
-    ⚔️ATK : SERANG MUSUH &nbsp;|&nbsp; RUN : SPRINT<br>
+    🔫FIRE : TEMBAK MUSUH &nbsp;|&nbsp; RUN : SPRINT<br>
     🟡 SS BOX = SUPER SAIYAN MODE<br>
     🚩 CHECKPOINT = SAVE POINT<br>
     BUNUH SEMUA MONSTER – 5 LEVELS
@@ -526,6 +528,17 @@ function spawnHit(x,y,color,n=5){
 function spawnLogo(x,y){
   particles.push({x,y,w:22,h:22,vx:0,vy:-5,life:35,type:'logo'});
 }
+function spawnMuzzle(x,y,dir){
+  // bullet spark particles
+  for(let i=0;i<5;i++){
+    const spread=(Math.random()-0.5)*0.3;
+    particles.push({x,y,w:3,h:3,color:'#ffee88',
+      vx:dir*(7+Math.random()*4),vy:spread*4-0.5,life:10,type:'slash'});
+  }
+  // shell casing
+  particles.push({x:x-(dir*30),y,w:4,h:7,color:'#d4a017',
+    vx:-dir*1.5,vy:-3,life:20,type:'dust'});
+}
 function spawnSlash(x,y,dir){
   for(let i=0;i<8;i++){
     const a=dir>0?(Math.random()*1.2-0.6):(Math.PI+Math.random()*1.2-0.6);
@@ -707,51 +720,127 @@ function drawChar(p){
   const fa1=inAir?-0.5:wa*0.55, fa2=inAir?0.4:-wa*0.55;
   const aa1=inAir?0.7:-wa*0.55, aa2=inAir?-0.5:wa*0.55;
 
-  // ── SWORD (right arm, attack pose) ──
+  // ── AK-47 ──────────────────────────────────────────────────
   const atkProgress = p.attacking ? (1 - p.atkTimer/18) : 0;
-  const swordPivotX = px + 15 + (p.dir>0?8:-8);
-  const swordPivotY = py + 24;
-  const swordBaseAngle = p.dir>0 ? -0.3 : Math.PI+0.3;
-  const swordSwingAngle = p.attacking ? (p.dir>0 ? swordBaseAngle + atkProgress*2.2 : swordBaseAngle - atkProgress*2.2) : swordBaseAngle;
+  // AK-47 held at right side, pointing forward in dir
+  const gunX = p.dir>0 ? px+14 : px+16;
+  const gunY = py + 26;
+  const gunRecoil = p.attacking ? Math.sin(atkProgress*Math.PI)*3 : 0;
 
-  // draw sword BEHIND character first
   ctx.save();
-  ctx.translate(swordPivotX, swordPivotY);
-  ctx.rotate(swordSwingAngle - (p.dir>0?0:Math.PI));
-  // blade glow during attack
-  if(p.attacking){
-    ctx.shadowColor='#ffd700';
-    ctx.shadowBlur=12+atkProgress*18;
+  ctx.translate(gunX, gunY - gunRecoil);
+  if(p.dir<0) ctx.scale(-1,1);
+
+  // ── Muzzle flash ──
+  if(p.attacking && atkProgress < 0.35){
+    const mfAlpha = 1 - atkProgress/0.35;
+    ctx.shadowColor='#ff8800';
+    ctx.shadowBlur=18*mfAlpha;
+    ctx.fillStyle=`rgba(255,220,80,${mfAlpha*0.9})`;
+    ctx.beginPath();
+    // spiky muzzle flash shape
+    for(let mi=0;mi<6;mi++){
+      const ma = mi*(Math.PI/3);
+      const mr = mi%2===0 ? 10 : 5;
+      mi===0 ? ctx.moveTo(38+Math.cos(ma)*mr, Math.sin(ma)*mr)
+             : ctx.lineTo(38+Math.cos(ma)*mr, Math.sin(ma)*mr);
+    }
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle=`rgba(255,255,200,${mfAlpha})`;
+    ctx.beginPath();ctx.arc(38,0,4,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
   }
-  // Blade
-  const bg=ctx.createLinearGradient(0,-48,0,0);
-  bg.addColorStop(0,'#ffffa0');bg.addColorStop(0.4,'#ffd700');bg.addColorStop(1,'#aa7700');
-  ctx.fillStyle=bg;
-  ctx.beginPath();ctx.moveTo(-2.5,4);ctx.lineTo(2.5,4);ctx.lineTo(1,-44);ctx.lineTo(-1,-44);ctx.closePath();ctx.fill();
-  ctx.fillStyle='rgba(255,255,200,0.7)';
-  ctx.beginPath();ctx.moveTo(-0.5,4);ctx.lineTo(1,4);ctx.lineTo(0,-42);ctx.closePath();ctx.fill();
-  // guard
-  ctx.fillStyle='#d4a017';ctx.beginPath();ctx.roundRect(-8,1,16,5,2);ctx.fill();
-  ctx.fillStyle='#00eeff';ctx.beginPath();ctx.arc(-5,3,2,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(5,3,2,0,Math.PI*2);ctx.fill();
-  // handle
-  ctx.fillStyle='#1a0a00';ctx.beginPath();ctx.roundRect(-3,6,6,16,2);ctx.fill();
-  ctx.strokeStyle='#8b6914';ctx.lineWidth=1.5;
-  for(let wi=0;wi<3;wi++){ctx.beginPath();ctx.moveTo(-3,8+wi*4);ctx.lineTo(3,8+wi*4);ctx.stroke();}
-  ctx.fillStyle='#d4a017';ctx.beginPath();ctx.arc(0,23,4,0,Math.PI*2);ctx.fill();
-  ctx.shadowBlur=0;
+
+  // ── Main receiver body (dark metal) ──
+  ctx.fillStyle='#2a2a2a';
+  ctx.beginPath();ctx.roundRect(0,-5,32,10,2);ctx.fill();
+  // receiver top rail
+  ctx.fillStyle='#1a1a1a';ctx.fillRect(0,-7,30,3);
+  // receiver detail lines
+  ctx.strokeStyle='#444';ctx.lineWidth=0.8;
+  ctx.beginPath();ctx.moveTo(4,-5);ctx.lineTo(4,5);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(8,-5);ctx.lineTo(8,5);ctx.stroke();
+
+  // ── Barrel ──
+  ctx.fillStyle='#333';ctx.fillRect(28,-3,14,6);
+  ctx.fillStyle='#222';ctx.fillRect(28,-2,14,2);
+  // muzzle tip
+  ctx.fillStyle='#1a1a1a';
+  ctx.beginPath();ctx.roundRect(40,-4,4,8,1);ctx.fill();
+  // gas tube above barrel
+  ctx.fillStyle='#2e2e2e';ctx.fillRect(24,-8,16,3);
+
+  // ── AKM-style curved banana magazine ──
+  ctx.fillStyle='#1e2a1e';
+  ctx.beginPath();
+  ctx.moveTo(10,5);
+  ctx.lineTo(16,5);
+  ctx.quadraticCurveTo(18,18,14,20);
+  ctx.quadraticCurveTo(10,20,8,18);
+  ctx.quadraticCurveTo(7,12,10,5);
+  ctx.closePath();ctx.fill();
+  // magazine highlight
+  ctx.strokeStyle='#2e4a2e';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(10,6);ctx.quadraticCurveTo(16,12,14,19);ctx.stroke();
+
+  // ── Stock (wooden AK style) ──
+  ctx.fillStyle='#8b5a2b';
+  ctx.beginPath();ctx.moveTo(0,-4);ctx.lineTo(-12,-4);ctx.lineTo(-14,2);ctx.lineTo(-12,6);ctx.lineTo(0,5);ctx.closePath();ctx.fill();
+  // wood grain on stock
+  ctx.strokeStyle='#7a4a20';ctx.lineWidth=0.8;
+  ctx.beginPath();ctx.moveTo(-2,-3);ctx.lineTo(-11,-3);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-2,2);ctx.lineTo(-11,3);ctx.stroke();
+  // butt plate
+  ctx.fillStyle='#333';ctx.fillRect(-14,-3,2,8);
+
+  // ── Pistol grip (wooden) ──
+  ctx.fillStyle='#8b5a2b';
+  ctx.beginPath();ctx.roundRect(4,4,7,12,2);ctx.fill();
+  ctx.fillStyle='#7a4a20';
+  ctx.beginPath();ctx.moveTo(5,5);ctx.lineTo(5,14);ctx.stroke();
+
+  // ── Front sight / gas block ──
+  ctx.fillStyle='#1a1a1a';ctx.fillRect(26,-10,4,3);
+  ctx.fillRect(27,-11,2,2);
+  // Rear sight
+  ctx.fillStyle='#222';ctx.fillRect(2,-9,6,3);
+
+  // ── Charging handle ──
+  ctx.fillStyle='#444';
+  ctx.beginPath();ctx.roundRect(20,-9,5,5,1);ctx.fill();
+
+  // ── Tactical details: selector switch ──
+  ctx.fillStyle='#555';ctx.fillRect(3,0,3,4);
+
+  // ── Sling attachment ──
+  ctx.strokeStyle='#555';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(-12,1,2,0,Math.PI*2);ctx.stroke();
+
   ctx.restore();
 
-  // attack arc visual
-  if(p.attacking && atkProgress>0.1){
+  // ── Bullet trail during attack ──
+  if(p.attacking && atkProgress > 0.05 && atkProgress < 0.5){
+    const trailAlpha = 0.7*(1-atkProgress/0.5);
+    const trailStartX = p.dir>0 ? px+56 : px-22;
+    const trailEndX   = p.dir>0 ? px+56+60+atkProgress*80 : px-22-60-atkProgress*80;
     ctx.save();
-    ctx.translate(swordPivotX,swordPivotY);
-    ctx.globalAlpha=atkProgress*0.5;
-    const startA=p.dir>0?swordBaseAngle:swordBaseAngle-atkProgress*2.2;
-    const endA=p.dir>0?swordSwingAngle:swordBaseAngle;
-    ctx.strokeStyle='#ffd700';ctx.lineWidth=3;
-    ctx.beginPath();ctx.arc(0,0,42,startA-Math.PI/2,endA-Math.PI/2);ctx.stroke();
-    ctx.globalAlpha=1;ctx.restore();
+    ctx.globalAlpha = trailAlpha;
+    ctx.strokeStyle = '#ffee88';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#ff8800';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.moveTo(trailStartX, gunY - gunRecoil + 2);
+    ctx.lineTo(trailEndX,   gunY - gunRecoil + 2);
+    ctx.stroke();
+    // shell casing eject
+    if(atkProgress < 0.2){
+      const sx = p.dir>0 ? px+20 : px+12;
+      const sy = gunY - gunRecoil - 4;
+      ctx.fillStyle = '#d4a017';
+      ctx.fillRect(sx + (p.dir>0?0:atkProgress*20), sy - atkProgress*12, 4, 7);
+    }
+    ctx.restore();
   }
 
   drawLeg(fa2,'#3a4558');
@@ -1057,8 +1146,8 @@ function update(){
     if(isAtk&&P.atkCooldown<=0&&!P.attacking){
       P.attacking=true;P.atkTimer=18;P.atkCooldown=25;
       const atkX=P.dir>0?P.x+P.w:P.x-50;
-      P.atkHitbox={x:atkX,y:P.y+6,w:52,h:P.h-10};
-      spawnSlash(P.dir>0?P.x+P.w+10:P.x-10,P.y+20,P.dir);
+      P.atkHitbox={x:atkX,y:P.y+10,w:115,h:P.h-20};
+      spawnMuzzle(P.dir>0?P.x+P.w+55:P.x-55,P.y+26,P.dir);
       Audio.sfxAtk&&Audio.sfxAtk();
       // Hit enemies
       enemies.forEach(e=>{
