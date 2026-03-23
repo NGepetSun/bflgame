@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Super BFL RPG – by elvanprmn</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;}
+#wrap{width:100%;max-width:820px;display:flex;flex-direction:column;align-items:center;}
+
+/* HUD */
+#hud{width:100%;display:flex;justify-content:space-between;align-items:center;
+  padding:3px 10px;background:rgba(0,0,0,0.9);border-bottom:1px solid #0af3;
+  font-family:'Orbitron',monospace;font-size:8px;gap:4px;}
+.hi{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.hl{font-size:5px;color:#0af8;letter-spacing:1px;}
+.hv{font-size:9px;color:#0fd;text-shadow:0 0 6px #0fd;}
+#hp-bar-wrap{display:flex;align-items:center;gap:4px;flex:1;max-width:180px;}
+#hp-label{font-size:6px;color:#f44;font-family:'Orbitron',monospace;}
+#hp-bar-bg{flex:1;height:8px;background:#300;border:1px solid #f446;border-radius:3px;overflow:hidden;}
+#hp-bar{height:100%;background:linear-gradient(90deg,#f00,#f80);transition:width 0.2s;border-radius:3px;}
+#mana-bar-wrap{display:flex;align-items:center;gap:4px;flex:1;max-width:120px;}
+#mana-label{font-size:6px;color:#48f;font-family:'Orbitron',monospace;}
+#mana-bar-bg{flex:1;height:8px;background:#003;border:1px solid #48f6;border-radius:3px;overflow:hidden;}
+#mana-bar{height:100%;background:linear-gradient(90deg,#00f,#08f);transition:width 0.2s;border-radius:3px;}
+
+/* Canvas */
+#gameCanvas{display:block;width:100%;max-width:820px;height:auto;
+  image-rendering:pixelated;image-rendering:crisp-edges;}
+
+/* Mobile Controls */
+#controls{width:100%;max-width:820px;display:flex;justify-content:space-between;
+  align-items:center;background:rgba(0,0,0,0.88);padding:5px 12px;
+  border-top:1px solid #0af2;gap:6px;}
+#dpad{display:flex;gap:5px;align-items:center;}
+.btn{background:rgba(0,200,255,0.08);border:1.5px solid rgba(0,200,255,0.3);
+  border-radius:10px;color:#0ef;font-family:'Orbitron',monospace;font-size:16px;
+  width:52px;height:52px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;user-select:none;-webkit-user-select:none;
+  box-shadow:0 0 8px #0af2;transition:all 0.07s;}
+.btn.pressed,.btn:active{background:rgba(0,200,255,0.35);border-color:#0ef;box-shadow:0 0 18px #0af8;}
+#action-btns{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+.btn-atk{background:rgba(255,60,0,0.12);border-color:rgba(255,80,0,0.5);color:#f84;
+  font-size:9px;width:56px;height:56px;}
+.btn-atk.pressed{background:rgba(255,60,0,0.4);border-color:#f84;box-shadow:0 0 20px #f806;}
+.btn-jump{background:rgba(180,0,255,0.12);border-color:rgba(180,0,255,0.5);color:#c4f;
+  font-size:9px;width:56px;height:56px;}
+.btn-jump.pressed{background:rgba(180,0,255,0.4);border-color:#c4f;box-shadow:0 0 20px #c4f8;}
+.btn-run{background:rgba(0,200,100,0.12);border-color:rgba(0,200,100,0.5);color:#0f8;
+  font-size:9px;width:48px;height:48px;}
+.btn-run.pressed{background:rgba(0,200,100,0.4);border-color:#0f8;}
+.btn-mute{background:rgba(255,255,0,0.08);border-color:rgba(255,255,0,0.3);
+  color:#ff0;font-size:14px;width:40px;height:40px;}
+
+/* Overlay */
+#overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(0,0,12,0.97);color:#fff;text-align:center;
+  padding:26px 32px;border:1px solid #0af4;border-radius:4px;
+  font-family:'Orbitron',monospace;z-index:50;max-width:90vw;
+  box-shadow:0 0 40px #0af3,inset 0 0 40px #0001;}
+#overlay h1{font-size:20px;color:#0ef;margin-bottom:6px;
+  text-shadow:0 0 20px #0ef,0 0 40px #08f;letter-spacing:3px;}
+#overlay .sub{color:#8b6914;font-size:9px;margin-bottom:12px;letter-spacing:2px;}
+#overlay .info{font-size:7px;color:#557;line-height:2.4;margin-bottom:14px;}
+#overlay .start{color:#0f8;font-size:8px;animation:blink 1s infinite;letter-spacing:1px;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+#level-banner{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(0,0,18,0.94);color:#0ef;text-align:center;
+  padding:16px 28px;border:1px solid #0af5;border-radius:4px;
+  font-family:'Orbitron',monospace;font-size:12px;z-index:40;display:none;
+  box-shadow:0 0 30px #0af3;text-shadow:0 0 12px #0ef;}
+#dmg-popup-container{position:fixed;top:0;left:0;pointer-events:none;z-index:60;}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div id="hud">
+  <div class="hi"><div class="hl">BFL</div><div class="hv" id="scoreDisplay">000000</div></div>
+  <div id="hp-bar-wrap"><div id="hp-label">HP</div><div id="hp-bar-bg"><div id="hp-bar" style="width:100%"></div></div><span class="hv" id="hpNum" style="font-size:8px;min-width:28px">10/10</span></div>
+  <div id="mana-bar-wrap"><div id="mana-label">MP</div><div id="mana-bar-bg"><div id="mana-bar" style="width:100%"></div></div></div>
+  <div class="hi"><div class="hl">LVL</div><div class="hv" id="levelDisplay">1</div></div>
+  <div class="hi"><div class="hl">LOGO</div><div class="hv" id="coinsDisplay">×00</div></div>
+  <div class="hi"><div class="hl">TIME</div><div class="hv" id="timeDisplay">400</div></div>
+  <div class="hi"><div class="hl">LIVES</div><div class="hv" id="livesDisplay">×3</div></div>
+</div>
+<canvas id="gameCanvas" width="820" height="370"></canvas>
+<div id="controls">
+  <div id="dpad">
+    <div class="btn" id="btn-left">◀</div>
+    <div class="btn" id="btn-right">▶</div>
+  </div>
+  <div id="action-btns">
+    <div class="btn btn-run" id="btn-run">RUN</div>
+    <div class="btn btn-atk" id="btn-atk">⚔️ATK</div>
+    <div class="btn btn-jump" id="btn-jump">JUMP</div>
+    <div class="btn btn-mute" id="btn-mute" onclick="toggleMute()">🔊</div>
+  </div>
+</div>
+</div>
+<div id="level-banner"></div>
+<div id="overlay">
+  <h1>SUPER BFL RPG</h1>
+  <div class="sub">BY ELVANPRMN</div>
+  <div class="info">
+    ◀ ▶ MOVE &nbsp;|&nbsp; JUMP : LOMPAT<br>
+    ⚔️ATK : SERANG MUSUH &nbsp;|&nbsp; RUN : SPRINT<br>
+    🟡 SS BOX = SUPER SAIYAN MODE<br>
+    🚩 CHECKPOINT = SAVE POINT<br>
+    BUNUH SEMUA MONSTER – 5 LEVELS
+  </div>
+  <div class="start">▶ TAP / ENTER TO START ◀</div>
+</div>
+<div id="dmg-popup-container"></div>
+
+<script>
+// ── LOGO ──────────────────────────────────────────────────────
+const logoImg=new Image();
