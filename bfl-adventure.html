@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>BFL ADVENTURE</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; touch-action:none; user-select:none; }
+
+  :root {
+    --purple:#7B2FBE;
+    --gold:#FFD700;
+    --dark:#0a0a0f;
+    --red:#FF2244;
+    --blue:#00BFFF;
+    --green:#00FF88;
+    --shadow-purple:rgba(123,47,190,0.6);
+  }
+
+  body {
+    background:#0a0a0f;
+    font-family:'Rajdhani',sans-serif;
+    overflow:hidden;
+    width:100vw; height:100vh;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; }
+  .screen.active { display:flex; }
+
+  /* ===== TITLE SCREEN ===== */
+  #titleScreen {
+    background: radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a0f 70%);
+    overflow:hidden;
+  }
+  .title-bg-particles { position:absolute; inset:0; overflow:hidden; }
+  .title-bg-particles::before {
+    content:'';
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(123,47,190,0.03) 2px, rgba(123,47,190,0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(123,47,190,0.03) 2px, rgba(123,47,190,0.03) 4px);
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove { 0%{transform:translate(0,0)} 100%{transform:translate(4px,4px)} }
+
+  .title-logo {
+    text-align:center;
+    z-index:10;
+    animation: titleFloat 3s ease-in-out infinite;
+  }
+  @keyframes titleFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+  .title-logo h1 {
+    font-family:'Orbitron',sans-serif;
+    font-size: clamp(2.5rem,8vw,5rem);
+    font-weight:900;
+    color: var(--gold);
+    text-shadow: 0 0 20px var(--gold), 0 0 40px rgba(255,215,0,0.5), 0 0 80px rgba(255,215,0,0.2);
+    letter-spacing:4px;
+    line-height:1;
+  }
+  .title-logo h2 {
+    font-family:'Orbitron',sans-serif;
+    font-size: clamp(1rem,3vw,1.8rem);
+    color: var(--purple);
+    text-shadow: 0 0 10px var(--purple);
+    letter-spacing:8px;
+    margin-top:5px;
+  }
+  .title-subtitle {
+    color:rgba(255,255,255,0.6);
+    font-size:clamp(0.7rem,2vw,1rem);
+    letter-spacing:3px;
+    margin-top:5px;
+  }
+
+  .title-character {
+    width:160px; height:auto;
+    image-rendering:pixelated;
+    margin:20px auto;
+    filter: drop-shadow(0 0 20px var(--purple)) drop-shadow(0 0 40px var(--gold));
+    animation: titleCharFloat 2s ease-in-out infinite;
+  }
+  @keyframes titleCharFloat {
+    0%,100%{transform:translateY(0) scale(1)}
+    50%{transform:translateY(-8px) scale(1.03)}
+  }
+
+  .btn-group { display:flex; flex-direction:column; gap:12px; width:220px; z-index:10; }
+  .btn-main {
+    padding:14px 30px;
+    background: linear-gradient(135deg, var(--purple), #4a1a8a);
+    color:var(--gold);
+    border:2px solid var(--gold);
+    font-family:'Orbitron',sans-serif;
+    font-size:0.9rem;
+    font-weight:700;
+    letter-spacing:2px;
+    cursor:pointer;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    transition: all 0.2s;
+    text-shadow: 0 0 8px var(--gold);
+    box-shadow: 0 0 15px var(--shadow-purple);
+  }
+  .btn-main:hover, .btn-main:active {
+    background: linear-gradient(135deg, #9B3FDE, #6a2aaa);
+    box-shadow: 0 0 25px var(--gold), 0 0 10px var(--purple);
+    transform: scale(1.04);
+  }
+
+  /* ===== STAGE SELECT ===== */
+  #stageScreen {
+    background: radial-gradient(ellipse at center, #0d1a2e 0%, #0a0a0f 70%);
+  }
+  .stage-title {
+    font-family:'Orbitron',sans-serif;
+    color:var(--gold);
+    font-size:clamp(1.2rem,4vw,2rem);
+    letter-spacing:4px;
+    margin-bottom:20px;
+    text-shadow: 0 0 15px var(--gold);
+  }
+  .stages-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+    max-width:360px; width:90%;
+  }
+  .stage-card {
+    background: linear-gradient(135deg, rgba(123,47,190,0.2), rgba(0,0,0,0.5));
+    border:1px solid rgba(123,47,190,0.4);
+    border-radius:8px;
+    padding:15px 10px;
+    text-align:center;
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .stage-card:hover, .stage-card:active {
+    border-color:var(--gold);
+    background: linear-gradient(135deg, rgba(123,47,190,0.4), rgba(255,215,0,0.1));
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--shadow-purple);
+  }
+  .stage-card .stage-icon { font-size:2rem; margin-bottom:5px; }
+  .stage-card .stage-name { color:var(--gold); font-size:0.8rem; font-weight:700; letter-spacing:1px; }
+  .stage-card .stage-diff { color:rgba(255,255,255,0.5); font-size:0.65rem; margin-top:3px; }
+  .stage-card .stage-diff.easy { color:var(--green); }
+  .stage-card .stage-diff.medium { color:orange; }
+  .stage-card .stage-diff.hard { color:var(--red); }
+  .back-btn {
+    margin-top:15px;
+    padding:10px 25px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.2);
+    color:rgba(255,255,255,0.6);
+    font-family:'Rajdhani',sans-serif;
+    font-size:0.85rem; letter-spacing:2px;
+    cursor:pointer; border-radius:4px;
+    transition:all 0.2s;
+  }
+  .back-btn:hover { color:white; border-color:white; }
+
+  /* ===== JUTSU SELECT ===== */
+  #jutsuScreen {
+    background: radial-gradient(ellipse at center, #1a0505 0%, #0a0a0f 70%);
+  }
+  .jutsu-title {
+    font-family:'Orbitron',sans-serif;
+    color:#FF4488;
+    font-size:clamp(1.2rem,4vw,2rem);
+    letter-spacing:4px;
+    margin-bottom:5px;
+    text-shadow: 0 0 15px #FF4488;
+  }
+  .jutsu-subtitle { color:rgba(255,255,255,0.4); font-size:0.75rem; letter-spacing:2px; margin-bottom:20px; }
+  .jutsu-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; max-width:360px; width:90%; }
+  .jutsu-card {
+    background: linear-gradient(135deg, rgba(255,68,136,0.1), rgba(0,0,0,0.5));
+    border:1px solid rgba(255,68,136,0.3);
+    border-radius:8px; padding:12px;
+    cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center; gap:10px;
+  }
+  .jutsu-card.selected {
+    border-color:var(--gold);
+    background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,68,136,0.1));
+    box-shadow: 0 0 12px rgba(255,215,0,0.4);
+  }
+  .jutsu-card:hover, .jutsu-card:active { transform:scale(1.03); }
+  .jutsu-icon { font-size:2rem; flex-shrink:0; }
+  .jutsu-info { text-align:left; }
+  .jutsu-name { color:var(--gold); font-size:0.85rem; font-weight:700; }
+  .jutsu-desc { color:rgba(255,255,255,0.5); font-size:0.65rem; margin-top:2px; }
+  .jutsu-type { font-size:0.6rem; margin-top:3px; letter-spacing:1px; }
+  .jutsu-type.fire { color:#FF6633; }
+  .jutsu-type.lightning { color:#FFFF00; }
+  .jutsu-type.wind { color:#88FFFF; }
+  .jutsu-type.shadow { color:#AA44FF; }
+  .jutsu-equip-hint { color:rgba(255,255,255,0.3); font-size:0.7rem; margin-top:8px; margin-bottom:10px; }
+  .btn-start {
+    padding:14px 40px;
+    background: linear-gradient(135deg, #FF2244, #8B0000);
+    color:white; border:2px solid #FF4466;
+    font-family:'Orbitron',sans-serif;
+    font-size:0.9rem; font-weight:700; letter-spacing:2px;
+    cursor:pointer; clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+    transition:all 0.2s; text-shadow:0 0 8px rgba(255,0,0,0.8);
+  }
+  .btn-start:hover { box-shadow:0 0 20px rgba(255,34,68,0.6); transform:scale(1.04); }
+
+  /* ===== GAME SCREEN ===== */
+  #gameScreen { background:#000; flex-direction:column; }
+
+  #gameCanvas {
+    width:100%; 
+    max-width:600px;
+    aspect-ratio:16/9;
+    display:block;
+    image-rendering:pixelated;
+  }
+
+  /* HUD */
+  .hud {
+    position:absolute; top:0; left:0; right:0;
+    padding:8px 12px;
+    display:flex; align-items:center; gap:8px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+    pointer-events:none;
+  }
+  .fighter-hud { flex:1; }
+  .fighter-hud.enemy { text-align:right; }
+  .fighter-name {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(0.5rem,2vw,0.75rem);
+    color:white; letter-spacing:1px;
+    text-shadow:0 0 8px var(--purple);
+  }
+  .hp-bar-wrap, .chakra-bar-wrap {
+    height:8px; background:rgba(0,0,0,0.5);
+    border:1px solid rgba(255,255,255,0.2);
+    border-radius:2px; overflow:hidden;
+    margin-top:2px;
+  }
+  .chakra-bar-wrap { height:5px; margin-top:2px; }
+  .hp-bar { height:100%; background:linear-gradient(90deg,#FF2244,#FF6688); transition:width 0.2s; border-radius:2px; }
+  .hp-bar.enemy-hp { background:linear-gradient(90deg,#FF8800,#FFAA00); }
+  .chakra-bar { height:100%; background:linear-gradient(90deg,#0088FF,#00DDFF); transition:width 0.3s; border-radius:2px; }
+  .fighter-hud.enemy .hp-bar-wrap,
+  .fighter-hud.enemy .chakra-bar-wrap { direction:rtl; }
+
+  .round-info { text-align:center; min-width:70px; }
+  .round-text {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(0.5rem,1.5vw,0.65rem);
+    color:rgba(255,255,255,0.5); letter-spacing:2px;
+  }
+  .timer {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(1.2rem,4vw,2rem);
+    color:var(--gold);
+    text-shadow:0 0 10px var(--gold);
+    font-weight:900;
+    line-height:1;
+  }
+  .round-num { color:var(--purple); font-size:0.7rem; font-family:'Orbitron',sans-serif; }
+
+  /* CHAKRA / JUTSU SLOTS */
+  .jutsu-hud {
+    position:absolute; bottom:120px; right:10px;
+    display:flex; flex-direction:column; gap:6px;
+    pointer-events:none;
+  }
+  .jutsu-slot {
+    width:clamp(36px,8vw,48px); height:clamp(36px,8vw,48px);
+    background:rgba(0,0,0,0.6);
+    border:2px solid rgba(123,47,190,0.5);
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(1.2rem,3vw,1.5rem);
+    position:relative;
+    transition:all 0.1s;
+  }
+  .jutsu-slot.ready { border-color:var(--gold); box-shadow:0 0 8px var(--gold); }
+  .jutsu-slot.active { border-color:#FF4488; box-shadow:0 0 12px #FF4488; transform:scale(1.1); }
+  .jutsu-cooldown {
+    position:absolute; inset:0; background:rgba(0,0,0,0.7);
+    border-radius:6px; display:flex; align-items:center; justify-content:center;
+    color:white; font-size:0.7rem; font-family:'Orbitron',sans-serif;
+  }
+  .jutsu-key {
+    position:absolute; bottom:2px; right:3px;
+    font-size:0.5rem; color:rgba(255,255,255,0.5);
+    font-family:'Orbitron',sans-serif;
+  }
+
+  /* CONTROLS */
+  .controls {
+    position:absolute; bottom:0; left:0; right:0;
+    height:115px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 10px 10px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  }
+
+  /* ANALOG */
+  .analog-wrap {
+    position:relative;
+    width:clamp(90px,22vw,110px);
+    height:clamp(90px,22vw,110px);
+  }
+  #analogBase {
+    width:100%; height:100%;
+    background:rgba(255,255,255,0.05);
+    border:2px solid rgba(255,255,255,0.15);
+    border-radius:50%;
+    position:relative;
+  }
+  #analogStick {
+    width:38%; height:38%;
+    background: radial-gradient(circle, rgba(123,47,190,0.9), rgba(80,20,130,0.9));
+    border:2px solid var(--purple);
+    border-radius:50%;
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 10px var(--shadow-purple);
+    transition: transform 0.05s;
+    pointer-events:none;
+  }
+
+  /* ACTION BUTTONS */
+  .action-btns {
+    display:grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(2,1fr);
+    gap:6px;
+    width:clamp(160px,42vw,200px);
+  }
+
+  .act-btn {
+    width:100%; aspect-ratio:1;
+    border:none; border-radius:50%;
+    font-family:'Orbitron',sans-serif;
+    font-weight:700;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+    font-size:clamp(0.45rem,1.3vw,0.6rem);
+    letter-spacing:0.5px;
+    line-height:1.2;
+    transition:all 0.1s;
+    -webkit-tap-highlight-color:transparent;
+    box-shadow:0 3px 0 rgba(0,0,0,0.5);
+    position:relative; overflow:hidden;
+  }
+  .act-btn::after {
+    content:''; position:absolute; inset:0;
+    background:rgba(255,255,255,0.1);
+    opacity:0; border-radius:50%;
+    transition:opacity 0.1s;
+  }
+  .act-btn:active::after { opacity:1; }
+  .act-btn:active { transform:scale(0.93) translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.5); }
+
+  .btn-punch  { background:radial-gradient(circle,#FF6644,#CC2200); color:white; }
+  .btn-kick   { background:radial-gradient(circle,#FF9922,#CC5500); color:white; }
+  .btn-block  { background:radial-gradient(circle,#4488FF,#0044CC); color:white; }
+  .btn-jump   { background:radial-gradient(circle,#44DD88,#008844); color:white; }
+  .btn-j1     { background:radial-gradient(circle,#FF44AA,#880044); color:var(--gold); }
+  .btn-j2     { background:radial-gradient(circle,#AA44FF,#440088); color:var(--gold); }
+
+  .btn-icon { font-size:1.1em; }
+
+  /* COMBO DISPLAY */
+  .combo-display {
+    position:absolute; top:50px; left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+    pointer-events:none;
+    transition: opacity 0.3s;
+  }
+  .combo-text {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(1rem,4vw,1.8rem);
+    color:var(--gold);
+    text-shadow:0 0 20px var(--gold);
+    font-weight:900;
+    animation:comboPop 0.3s ease-out;
+  }
+  @keyframes comboPop {
+    0%{transform:scale(1.5);opacity:0}
+    100%{transform:scale(1);opacity:1}
+  }
+  .combo-sub { color:rgba(255,215,0,0.6); font-size:0.7rem; letter-spacing:2px; }
+
+  /* JUTSU EFFECT OVERLAY */
+  .jutsu-effect {
+    position:absolute; inset:0;
+    pointer-events:none;
+    display:none;
+    animation: jutsuFlash 0.5s ease-out;
+  }
+  @keyframes jutsuFlash { 0%{opacity:1} 100%{opacity:0} }
+
+  /* DAMAGE NUMBERS */
+  .dmg-num {
+    position:absolute;
+    font-family:'Orbitron',sans-serif;
+    font-weight:900;
+    pointer-events:none;
+    animation: dmgFloat 1s ease-out forwards;
+  }
+  @keyframes dmgFloat {
+    0%{transform:translateY(0) scale(1.3);opacity:1}
+    100%{transform:translateY(-60px) scale(0.8);opacity:0}
+  }
+
+  /* ROUND ANNOUNCE */
+  .announce {
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none; z-index:50;
+  }
+  .announce-text {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(2rem,10vw,4rem);
+    font-weight:900;
+    color:var(--gold);
+    text-shadow:0 0 30px var(--gold), 0 0 60px rgba(255,215,0,0.4);
+    letter-spacing:4px;
+    animation: announcePop 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    text-align:center;
+  }
+  @keyframes announcePop {
+    0%{transform:scale(0) rotate(-10deg);opacity:0}
+    100%{transform:scale(1) rotate(0deg);opacity:1}
+  }
+
+  /* GAME OVER */
+  #gameOverScreen {
+    background:radial-gradient(ellipse at center,#1a0000,#0a0a0f);
+  }
+  .go-title {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(2rem,8vw,4rem);
+    font-weight:900;
+    margin-bottom:10px;
+  }
+  .go-title.win { color:var(--gold); text-shadow:0 0 30px var(--gold); }
+  .go-title.lose { color:var(--red); text-shadow:0 0 30px var(--red); }
+  .go-stats {
+    color:rgba(255,255,255,0.6); font-size:0.9rem;
+    margin:15px 0; line-height:2;
+    text-align:center;
+  }
+  .go-stats span { color:var(--gold); font-weight:700; }
+
+  /* ===== PIXEL CHARACTER ON CANVAS ===== */
+
+  /* Particle burst */
+  @keyframes particleBurst {
+    0%{transform:scale(0);opacity:1}
+    100%{transform:scale(3);opacity:0}
+  }
+</style>
+</head>
+<body>
+
+<!-- TITLE SCREEN -->
+<div class="screen active" id="titleScreen">
+  <div class="title-bg-particles"></div>
+  <div class="title-logo">
+    <h1>BFL</h1>
+    <h2>ADVENTURE</h2>
+    <div class="title-subtitle">⚔ STREET FIGHTER CHRONICLES ⚔</div>
+  </div>
+  <!-- Pixel character using canvas -->
+  <canvas id="titleChar" class="title-character" width="80" height="96"></canvas>
+  <div class="btn-group">
+    <button class="btn-main" onclick="showScreen('stageScreen')">▶ MULAI GAME</button>
+    <button class="btn-main" onclick="showScreen('jutsuScreen')">🌀 PILIH JUTSU</button>
+    <button class="btn-main" onclick="showHowTo()">📖 CARA MAIN</button>
+  </div>
+</div>
+
+<!-- STAGE SELECT -->
+<div class="screen" id="stageScreen">
+  <div class="stage-title">PILIH ARENA</div>
+  <div class="stages-grid">
+    <div class="stage-card" onclick="selectStage(0)">
+      <div class="stage-icon">🌆</div>
+      <div class="stage-name">KOTA MALAM</div>
+      <div class="stage-diff easy">MUDAH</div>
+    </div>
+    <div class="stage-card" onclick="selectStage(1)">
+      <div class="stage-icon">🌋</div>
+      <div class="stage-name">GUNUNG API</div>
+      <div class="stage-diff medium">SEDANG</div>
+    </div>
+    <div class="stage-card" onclick="selectStage(2)">
+      <div class="stage-icon">🌊</div>
+      <div class="stage-name">DERMAGA</div>
+      <div class="stage-diff easy">MUDAH</div>
+    </div>
+    <div class="stage-card" onclick="selectStage(3)">
+      <div class="stage-icon">🏯</div>
+      <div class="stage-name">KUIL KUNO</div>
+      <div class="stage-diff medium">SEDANG</div>
+    </div>
+    <div class="stage-card" onclick="selectStage(4)">
+      <div class="stage-icon">🌌</div>
+      <div class="stage-name">DIMENSI GELAP</div>
+      <div class="stage-diff hard">SULIT</div>
+    </div>
+    <div class="stage-card" onclick="selectStage(5)">
+      <div class="stage-icon">👑</div>
+      <div class="stage-name">ISTANA BOSS</div>
+      <div class="stage-diff hard">BOSS!</div>
+    </div>
+  </div>
+  <button class="back-btn" onclick="showScreen('titleScreen')">◀ KEMBALI</button>
+</div>
+
+<!-- JUTSU SELECT -->
+<div class="screen" id="jutsuScreen">
+  <div class="jutsu-title">PILIH JUTSU</div>
+  <div class="jutsu-subtitle">PILIH 2 JUTSU UNTUK PERTARUNGAN</div>
+  <div class="jutsu-grid">
+    <div class="jutsu-card" id="jcard0" onclick="toggleJutsu(0)">
+      <div class="jutsu-icon">🔥</div>
+      <div class="jutsu-info">
+        <div class="jutsu-name">KATON: FIREBALL</div>
+        <div class="jutsu-desc">Lontarkan bola api dahsyat ke musuh</div>
+        <div class="jutsu-type fire">FIRE JUTSU • DMG: 35</div>
+      </div>
+    </div>
+    <div class="jutsu-card" id="jcard1" onclick="toggleJutsu(1)">
+      <div class="jutsu-icon">⚡</div>
+      <div class="jutsu-info">
+        <div class="jutsu-name">RAITON: CHIDORI</div>
+        <div class="jutsu-desc">Serangan petir berkecepatan tinggi</div>
+        <div class="jutsu-type lightning">LIGHTNING • DMG: 45</div>
+      </div>
+    </div>
+    <div class="jutsu-card" id="jcard2" onclick="toggleJutsu(2)">
+      <div class="jutsu-icon">🌪️</div>
+      <div class="jutsu-info">
+        <div class="jutsu-name">FUTON: RASENSHURIKEN</div>
+        <div class="jutsu-desc">Shuriken angin menghancurkan segalanya</div>
+        <div class="jutsu-type wind">WIND JUTSU • DMG: 50</div>
+      </div>
+    </div>
+    <div class="jutsu-card" id="jcard3" onclick="toggleJutsu(3)">
+      <div class="jutsu-icon">👥</div>
+      <div class="jutsu-info">
+        <div class="jutsu-name">SHADOW CLONE</div>
+        <div class="jutsu-desc">Buat klon bayangan untuk serangan massal</div>
+        <div class="jutsu-type shadow">SHADOW JUTSU • DMG: 30×3</div>
+      </div>
+    </div>
+    <div class="jutsu-card" id="jcard4" onclick="toggleJutsu(4)">
+      <div class="jutsu-icon">🌀</div>
+      <div class="jutsu-info">
+        <div class="jutsu-name">AMATERASU</div>
+        <div class="jutsu-desc">Api abadi yang tak bisa dipadamkan</div>
+        <div class="jutsu-type fire">BLACK FIRE • DMG: 60</div>
+      </div>
+    </div>
+    <div class="jutsu-card" id="jcard5" onclick="toggleJutsu(5)">
+      <div class="jutsu-icon">💎</div>
+      <div class="jutsu-info">
+        <div class="jutsu-name">SUSANOO</div>
+        <div class="jutsu-desc">Bangkitkan dewa pelindung kolosal</div>
+        <div class="jutsu-type shadow">ULTIMATE • DMG: 80</div>
+      </div>
+    </div>
+  </div>
+  <div class="jutsu-equip-hint" id="jutsuHint">Pilih 2 jutsu (0 dipilih)</div>
+  <div style="display:flex;gap:10px;">
+    <button class="back-btn" onclick="showScreen('titleScreen')">◀ KEMBALI</button>
+    <button class="btn-start" onclick="showScreen('stageScreen')">LANJUT ▶</button>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen" id="gameScreen">
+  <!-- HUD -->
+  <div class="hud">
+    <div class="fighter-hud">
+      <div class="fighter-name" id="p1Name">BFL FIGHTER</div>
+      <div class="hp-bar-wrap"><div class="hp-bar" id="p1HP" style="width:100%"></div></div>
+      <div class="chakra-bar-wrap"><div class="chakra-bar" id="p1Chakra" style="width:100%"></div></div>
+    </div>
+    <div class="round-info">
+      <div class="round-text">ROUND</div>
+      <div class="timer" id="timer">60</div>
+      <div class="round-num" id="roundNum">1</div>
+    </div>
+    <div class="fighter-hud enemy">
+      <div class="fighter-name" id="enemyName">SHADOW BOSS</div>
+      <div class="hp-bar-wrap"><div class="hp-bar enemy-hp" id="enemyHP" style="width:100%"></div></div>
+      <div class="chakra-bar-wrap"><div class="chakra-bar" id="enemyChakra" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <canvas id="gameCanvas" width="600" height="338"></canvas>
+
+  <!-- Combo -->
+  <div class="combo-display" id="comboDisplay" style="opacity:0">
+    <div class="combo-text" id="comboText">0 HIT COMBO!</div>
+    <div class="combo-sub">COMBO STREAK</div>
+  </div>
+
+  <!-- Jutsu HUD -->
+  <div class="jutsu-hud" id="jutsuHud">
+    <div class="jutsu-slot" id="jslot0">🔥<span class="jutsu-key">J1</span></div>
+    <div class="jutsu-slot" id="jslot1">⚡<span class="jutsu-key">J2</span></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="analog-wrap">
+      <div id="analogBase">
+        <div id="analogStick"></div>
+      </div>
+    </div>
+    <div class="action-btns">
+      <button class="act-btn btn-punch" id="btnPunch" ontouchstart="btnDown('punch')" ontouchend="btnUp('punch')">
+        <span class="btn-icon">👊</span>PUNCH
+      </button>
+      <button class="act-btn btn-kick" id="btnKick" ontouchstart="btnDown('kick')" ontouchend="btnUp('kick')">
+        <span class="btn-icon">🦵</span>KICK
+      </button>
+      <button class="act-btn btn-block" id="btnBlock" ontouchstart="btnDown('block')" ontouchend="btnUp('block')">
+        <span class="btn-icon">🛡️</span>BLOCK
+      </button>
+      <button class="act-btn btn-jump" id="btnJump" ontouchstart="btnDown('jump')" ontouchend="btnUp('jump')">
+        <span class="btn-icon">⬆️</span>JUMP
+      </button>
+      <button class="act-btn btn-j1" id="btnJ1" ontouchstart="useJutsu(0)" ontouchend="">
+        <span class="btn-icon" id="j1Icon">🔥</span>J1
+      </button>
+      <button class="act-btn btn-j2" id="btnJ2" ontouchstart="useJutsu(1)" ontouchend="">
+        <span class="btn-icon" id="j2Icon">⚡</span>J2
+      </button>
+    </div>
+  </div>
+
+  <!-- Announce overlay -->
+  <div class="announce" id="announce" style="display:none">
+    <div class="announce-text" id="announceText"></div>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div class="screen" id="gameOverScreen">
+  <div class="go-title" id="goTitle">VICTORY!</div>
+  <div class="go-stats" id="goStats"></div>
+  <div class="btn-group" style="width:200px;margin-top:10px;">
+    <button class="btn-main" onclick="restartGame()">🔄 MAIN LAGI</button>
+    <button class="btn-main" onclick="showScreen('stageScreen')">🗺️ GANTI STAGE</button>
+    <button class="btn-main" onclick="showScreen('titleScreen')">🏠 MENU</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// GAME STATE
+// ============================================================
+const STAGES = [
+  {name:"Kota Malam",   bg:"#0d0d1a", floor:"#1a1a3a", accent:"#4466FF", enemyName:"Street Thug",    hpMul:0.7},
+  {name:"Gunung Api",   bg:"#1a0800", floor:"#3a1a00", accent:"#FF6600", enemyName:"Lava Warrior",   hpMul:0.9},
+  {name:"Dermaga",      bg:"#001a2e", floor:"#003355", accent:"#0099FF", enemyName:"Dock Fighter",   hpMul:0.75},
+  {name:"Kuil Kuno",    bg:"#1a1000", floor:"#2a2000", accent:"#FFAA00", enemyName:"Ninja Phantom",  hpMul:1.0},
+  {name:"Dimensi Gelap",bg:"#100010", floor:"#1a0020", accent:"#AA00FF", enemyName:"Dark Entity",    hpMul:1.2},
+  {name:"Istana Boss",  bg:"#1a0000", floor:"#2a0000", accent:"#FF0000", enemyName:"Shadow BOSS",    hpMul:1.5},
+];
+
+const JUTSUS = [
+  {name:"Katon: Fireball",   icon:"🔥", color:"#FF4400", dmg:35, chakra:30, cd:4},
+  {name:"Raiton: Chidori",   icon:"⚡", color:"#FFFF00", dmg:45, chakra:40, cd:5},
+  {name:"Futon: Rasenshuriken",icon:"🌪️",color:"#88FFFF",dmg:50, chakra:45, cd:6},
+  {name:"Shadow Clone",       icon:"👥", color:"#8844FF", dmg:30, chakra:35, cd:5},
+  {name:"Amaterasu",          icon:"🌀", color:"#4400FF", dmg:60, chakra:55, cd:8},
+  {name:"Susanoo",            icon:"💎", color:"#00FFAA", dmg:80, chakra:70, cd:10},
+];
+
+let selectedJutsus = [0,1];
+let selectedStage  = 0;
+let gameRunning    = false;
+let roundTimer     = 60;
+let roundNum       = 1;
+let combo          = 0;
+let comboTimer     = 0;
+let gameScore      = 0;
+let knockdowns     = 0;
+
+// Player
+const p = {
+  x:80, y:200, vy:0, vx:0,
+  w:40, h:64,
+  hp:100, maxHP:100,
+  chakra:100, maxChakra:100,
+  state:'idle',   // idle,walk,attack,block,jump,hurt,ko
+  frame:0, frameTick:0,
+  facing:1, // 1=right, -1=left
+  blocking:false,
+  jutsuCD:[0,0],
+  attackCD:0,
+  onGround:true,
+  invince:0,
+};
+
+// Enemy
+const e = {
+  x:460, y:200, vy:0,
+  w:38, h:60,
+  hp:100, maxHP:100,
+  chakra:60, maxChakra:60,
+  state:'idle',
+  frame:0, frameTick:0,
+  facing:-1,
+  blocking:false,
+  attackCD:0,
+  aiTimer:0,
+  onGround:true,
+  invince:0,
+};
+
+const FLOOR_Y = 210;
+const GRAVITY = 0.6;
+
+// Input
+const inp = {
+  left:false, right:false, punch:false, kick:false,
+  block:false, jump:false, j1:false, j2:false,
+};
+
+// Projectiles
+let projectiles = [];
+// Particles
+let particles = [];
+// Effects
+let effects = [];
+// Hit flashes
+let flashTimer = 0;
+let flashColor = '';
+
+// ============================================================
+// CANVAS + PIXEL DRAWING
+// ============================================================
+let canvas, ctx;
+let titleCanvas, titleCtx;
+
+// Character sprite data (64-wide view at 4x pixel scale)
+// We'll draw programmatic pixel art characters
+
+function drawPixelChar(ctx, x, y, scale, options={}) {
+  const {
+    facing=1, state='idle', frame=0,
+    isEnemy=false, blocking=false, isHurt=false,
+    stageAccent='#4466FF'
+  } = options;
+
+  const s = scale;
+  ctx.save();
+  if(facing < 0) {
+    ctx.translate(x + 20*s, y);
+    ctx.scale(-1,1);
+    x = 0; y = 0;
+  } else {
+    ctx.translate(x, y);
+  }
+
+  // Animation offsets
+  let bodyBob = 0, legOff = 0, armOff = 0, walkLeg = 0;
+  if(state === 'idle') {
+    bodyBob = Math.sin(Date.now()/400)*1.5*s;
+  }
+  if(state === 'walk') {
+    const t = (Date.now()/200 + frame);
+    bodyBob = Math.sin(t*Math.PI)*1.5*s;
+    walkLeg = Math.sin(t*Math.PI)*6*s;
+    armOff  = -Math.sin(t*Math.PI)*4*s;
+  }
+  if(state === 'attack') {
+    armOff = -12*s;
+  }
+  if(state === 'hurt') {
+    bodyBob = -2*s;
+  }
+  if(state === 'jump') {
+    bodyBob = -8*s;
+  }
+
+  const by = bodyBob; // body y offset
+
+  // Colors
+  const jacketCol  = isEnemy ? '#333333' : '#7B2FBE';
+  const jacketTrim = isEnemy ? '#666666' : '#FFD700';
+  const skinCol    = isEnemy ? '#888888' : '#D4936A';
+  const maskCol    = '#707070';
+  const shortCol   = isEnemy ? '#444444' : '#555566';
+  const hairCol    = isEnemy ? '#333333' : '#6B3A2A';
+  const shoeCol    = '#222222';
+
+  const P = (px, py, pw, ph, col, alpha=1) => {
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = col;
+    ctx.fillRect(px*s, (py+by)*s, pw*s, ph*s);
+    ctx.globalAlpha = 1;
+  };
+
+  if(isHurt) { ctx.filter = 'brightness(2) saturate(0)'; }
+
+  // === LEGS ===
+  // Left leg
+  P(4, 30+walkLeg/s, 5, 10, shortCol);
+  P(4, 40+walkLeg/s, 5, 4, skinCol);
+  P(3, 44+walkLeg/s, 7, 3, shoeCol);
+  // Right leg
+  P(11, 30-walkLeg/s, 5, 10, shortCol);
+  P(11, 40-walkLeg/s, 5, 4, skinCol);
+  P(10, 44-walkLeg/s, 7, 3, shoeCol);
+
+  // === BODY ===
+  // Jacket (open)
+  P(2, 16+by/s, 16, 16, jacketCol);
+  // White shirt inside
+  P(6, 17+by/s, 8, 14, '#EEEEEE');
+  // Jacket trim / stripe
+  P(2, 16+by/s, 2, 16, '#111111');
+  P(16, 16+by/s, 2, 16, '#111111');
+  // Gold cuffs
+  P(2, 30+by/s, 2, 2, jacketTrim);
+  P(16, 30+by/s, 2, 2, jacketTrim);
+  // Logo on jacket (B.F.)
+  ctx.fillStyle = jacketTrim;
+  ctx.font = `bold ${3*s}px monospace`;
+  ctx.fillText('BF', 7*s, (23+by/s+by/s)*s);
+
+  // === ARMS ===
+  // Left arm
+  P(0, 17+by/s + armOff/s, 2, 12, jacketCol);
+  P(0, 29+by/s + armOff/s, 2, 4, skinCol);
+  // Right arm (punch if attacking)
+  const ra = (state==='attack') ? -6 : 0;
+  P(18, 17+by/s + armOff/s + ra, 2, 12, jacketCol);
+  P(18, 29+by/s + armOff/s + ra, 2, 4, skinCol);
+  if(state==='attack') {
+    // Fist
+    P(19, 25+by/s + ra, 3, 3, skinCol);
+    // Impact flash
+    P(22, 23+by/s + ra, 5, 5, '#FFFF00', 0.8);
+  }
+
+  // === HEAD ===
+  // Hair
+  P(4, 4+by/s, 12, 4, hairCol);
+  P(3, 5+by/s, 2, 6, hairCol);
+  P(15, 5+by/s, 2, 6, hairCol);
+  // Face
+  P(4, 7+by/s, 12, 8, skinCol);
+  // Eyes
+  P(6, 9+by/s, 2, 2, '#222222');
+  P(12, 9+by/s, 2, 2, '#222222');
+  // Mask (lower half face)
+  P(4, 12+by/s, 12, 4, maskCol);
+  P(4, 11+by/s, 12, 2, '#999999');
+
+  // === TATTOO (leg) ===
+  const tattooPattern = [
+    [0,1,0,1,0],[1,0,1,0,1],[0,1,1,1,0],[1,0,1,0,1],[0,1,0,1,0]
+  ];
+  for(let ty=0;ty<5;ty++) for(let tx=0;tx<5;tx++) {
+    if(tattooPattern[ty][tx]) P(11+tx, 38+ty, 1, 1, 'rgba(0,0,0,0.4)');
+  }
+
+  // Blocking shield
+  if(blocking) {
+    ctx.fillStyle = 'rgba(100,150,255,0.4)';
+    ctx.strokeStyle = '#88AAFF';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(10*s, 25*s, 14*s, 18*s, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  ctx.filter = 'none';
+  ctx.restore();
+}
+
+// Draw stage background
+function drawStage(ctx, stageIdx) {
+  const st = STAGES[stageIdx] || STAGES[0];
+  const W = canvas.width, H = canvas.height;
+
+  // Sky gradient
+  const sky = ctx.createLinearGradient(0,0,0,H*0.65);
+  sky.addColorStop(0, st.bg);
+  sky.addColorStop(1, shadeColor(st.bg, 30));
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H*0.65);
+
+  // Background city/mountains (pixelated silhouette)
+  drawBackground(ctx, stageIdx, W, H);
+
+  // Floor
+  const floorY = H*0.65;
+  const floor = ctx.createLinearGradient(0, floorY, 0, H);
+  floor.addColorStop(0, st.floor);
+  floor.addColorStop(1, '#000000');
+  ctx.fillStyle = floor;
+  ctx.fillRect(0, floorY, W, H - floorY);
+
+  // Floor line glow
+  ctx.strokeStyle = st.accent;
+  ctx.lineWidth = 2;
+  ctx.shadowColor = st.accent;
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.moveTo(0, floorY+1);
+  ctx.lineTo(W, floorY+1);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function drawBackground(ctx, idx, W, H) {
+  const floorY = H*0.65;
+  ctx.save();
+  ctx.globalAlpha = 0.7;
+
+  if(idx === 0) { // City night
+    ctx.fillStyle = '#0a0a1a';
+    const buildings = [[20,40,60],[120,60,45],[200,30,70],[300,50,55],[400,35,65],[490,25,80]];
+    buildings.forEach(([x,h,w])=>{
+      ctx.fillStyle = '#101020';
+      ctx.fillRect(x, floorY-h*0.8, w, h*0.8);
+      // Windows
+      ctx.fillStyle = '#FFFFAA';
+      for(let wy=0;wy<4;wy++) for(let wx=0;wx<3;wx++) {
+        if(Math.random()>0.3) {
+          ctx.globalAlpha = 0.6 + Math.random()*0.4;
+          ctx.fillRect(x+6+wx*12, floorY-h*0.8+6+wy*10, 5, 5);
+        }
+      }
+    });
+    // Moon
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = '#FFFFEE';
+    ctx.beginPath();
+    ctx.arc(500, 40, 20, 0, Math.PI*2);
+    ctx.fill();
+  } else if(idx === 1) { // Volcano
+    ctx.fillStyle = '#1a0500';
+    // Mountain
+    ctx.beginPath();
+    ctx.moveTo(0, floorY);
+    ctx.lineTo(200, floorY-100);
+    ctx.lineTo(300, floorY-180);
+    ctx.lineTo(400, floorY-100);
+    ctx.lineTo(W, floorY);
+    ctx.fill();
+    // Lava
+    ctx.fillStyle = '#FF4400';
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.arc(295, floorY-175, 15, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#FF8800';
+    ctx.globalAlpha = 0.3;
+    ctx.fillRect(280, floorY-175, 30, 40);
+  } else if(idx === 2) { // Harbor
+    ctx.fillStyle = '#001830';
+    // Water
+    ctx.globalAlpha = 0.4;
+    ctx.fillStyle = '#003366';
+    ctx.fillRect(0, floorY*0.6, W, floorY*0.4);
+    // Pier posts
+    ctx.fillStyle = '#3a2200';
+    for(let i=0;i<8;i++) ctx.fillRect(i*80+20, floorY-60, 8, 65);
+    // Boat silhouette
+    ctx.fillStyle = '#1a1a2a';
+    ctx.fillRect(350, floorY-80, 180, 50);
+    ctx.fillRect(400, floorY-130, 10, 55);
+  } else if(idx === 3) { // Temple
+    ctx.fillStyle = '#0a0800';
+    // Temple structure
+    ctx.fillStyle = '#2a1800';
+    ctx.fillRect(150, floorY-120, 300, 120);
+    ctx.fillRect(170, floorY-160, 260, 50);
+    ctx.fillRect(200, floorY-190, 200, 40);
+    // Columns
+    ctx.fillStyle = '#3a2800';
+    for(let c=0;c<5;c++) ctx.fillRect(170+c*65, floorY-120, 15, 120);
+    // Lanterns
+    ctx.fillStyle = '#FFAA00';
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath(); ctx.arc(200, floorY-130, 8, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(400, floorY-130, 8, 0, Math.PI*2); ctx.fill();
+  } else if(idx === 4) { // Dark dimension
+    // Void cracks
+    ctx.strokeStyle = '#AA00FF';
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.4;
+    for(let i=0;i<8;i++) {
+      ctx.beginPath();
+      ctx.moveTo(Math.random()*W, 0);
+      ctx.lineTo(Math.random()*W, floorY);
+      ctx.stroke();
+    }
+    // Stars
+    ctx.fillStyle = '#FFFFFF';
+    ctx.globalAlpha = 0.3;
+    for(let i=0;i<80;i++) {
+      ctx.fillRect(Math.random()*W, Math.random()*floorY, 1, 1);
+    }
+  } else if(idx === 5) { // Boss palace
+    ctx.fillStyle = '#1a0000';
+    ctx.fillRect(100, floorY-150, 400, 150);
+    ctx.fillRect(80, floorY-100, 20, 100);
+    ctx.fillRect(500, floorY-100, 20, 100);
+    // Torches
+    ctx.fillStyle = '#FF4400';
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath(); ctx.arc(95, floorY-105, 8, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(505, floorY-105, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#FF8800';
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath(); ctx.arc(95, floorY-105, 13, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(505, floorY-105, 13, 0, Math.PI*2); ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function shadeColor(col, amt) {
+  // lighten hex color
+  let n = parseInt(col.slice(1),16);
+  let r = Math.min(255,(n>>16)+amt);
+  let g = Math.min(255,((n>>8)&0xFF)+amt);
+  let b = Math.min(255,(n&0xFF)+amt);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+
+// ============================================================
+// PROJECTILES & PARTICLES
+// ============================================================
+function spawnProjectile(fromPlayer, jutsuIdx) {
+  const jt = JUTSUS[selectedJutsus[jutsuIdx]] || JUTSUS[0];
+  const src = fromPlayer ? p : e;
+  projectiles.push({
+    x: src.x + (src.w/2),
+    y: src.y + src.h/2,
+    vx: (src.facing || 1) * 6,
+    vy: 0,
+    size: jutsuIdx === 1 ? 18 : 14,
+    color: jt.color,
+    icon: jt.icon,
+    dmg: jt.dmg,
+    fromPlayer,
+    life: 60,
+    jutsuIdx,
+    type: jutsuIdx === 3 ? 'clone' : 'normal',
+  });
+
+  // Clone jutsu: 3 projectiles
+  if(selectedJutsus[jutsuIdx] === 3) {
+    for(let i=1;i<=2;i++) {
+      projectiles.push({
+        x: src.x + src.w/2,
+        y: src.y + src.h/2,
+        vx: (src.facing||1)*(6+i*1.5),
+        vy: (i===1?-2:2),
+        size:12, color:jt.color, icon:'👤',
+        dmg: Math.floor(jt.dmg/3), fromPlayer, life:50, jutsuIdx,
+      });
+    }
+  }
+}
+
+function spawnParticles(x, y, color, count=12, size=4) {
+  for(let i=0;i<count;i++) {
+    const a = (Math.PI*2*i)/count + Math.random()*0.5;
+    const spd = 2 + Math.random()*4;
+    particles.push({
+      x,y, vx:Math.cos(a)*spd, vy:Math.sin(a)*spd-1,
+      size: size*(0.5+Math.random()),
+      color, life:1, maxLife:20+Math.random()*20,
+    });
+  }
+}
+
+function spawnHitEffect(x, y, color='#FFFF00') {
+  effects.push({x,y,color,life:1,maxLife:15,type:'hit'});
+}
+
+// ============================================================
+// DAMAGE & COMBAT
+// ============================================================
+function dealDamage(target, dmg, isCrit=false) {
+  if(target.invince > 0) return;
+  if(target.blocking) dmg = Math.floor(dmg*0.2);
+  dmg = Math.floor(dmg * (0.8 + Math.random()*0.4));
+  target.hp = Math.max(0, target.hp - dmg);
+  target.invince = 20;
+
+  const isPlayer = (target === p);
+
+  // Update HUD
+  if(isPlayer) {
+    document.getElementById('p1HP').style.width = (target.hp/target.maxHP*100)+'%';
+  } else {
+    document.getElementById('enemyHP').style.width = (target.hp/target.maxHP*100)+'%';
+  }
+
+  // Damage number
+  showDamageNum(target.x + target.w/2, target.y, dmg, isCrit, target === p ? '#FF6666':'#FFFF44');
+
+  // Combo
+  if(!isPlayer) {
+    combo++;
+    comboTimer = 120;
+    if(combo >= 3) showCombo(combo);
+    gameScore += dmg * combo;
+  }
+
+  if(target.hp <= 0) {
+    target.state = 'ko';
+    if(!isPlayer) {
+      knockdowns++;
+      setTimeout(()=>checkRoundEnd(true), 600);
+    } else {
+      setTimeout(()=>checkRoundEnd(false), 600);
+    }
+  } else {
+    if(!target.blocking) target.state = 'hurt';
+    setTimeout(()=>{ if(target.state==='hurt') target.state='idle'; }, 300);
+  }
+}
+
+function showDamageNum(x, y, val, crit, color) {
+  const gs = document.getElementById('gameScreen');
+  const el = document.createElement('div');
+  el.className = 'dmg-num';
+  el.textContent = (crit?'CRIT! ':'')+val;
+  el.style.cssText = `
+    left:${(x/600)*100}%; top:${(y/338)*100}%;
+    color:${color};
+    font-size:${crit ? '1.2rem':'0.9rem'};
+    text-shadow: 0 0 8px ${color};
+    z-index:100;
+  `;
+  gs.appendChild(el);
+  setTimeout(()=>el.remove(), 1000);
+}
+
+function showCombo(n) {
+  const d = document.getElementById('comboDisplay');
+  const t = document.getElementById('comboText');
+  d.style.opacity = '1';
+  t.textContent = n + ' HIT COMBO!';
+  t.style.color = n>=10 ? '#FF4488' : n>=5 ? '#FF8800' : '#FFD700';
+}
+
+// ============================================================
+// AI
+// ============================================================
+function updateAI() {
+  if(e.state === 'ko') return;
+  e.aiTimer--;
+  if(e.aiTimer > 0) return;
+
+  const dist = Math.abs(p.x - e.x);
+  const facing = p.x < e.x ? -1 : 1;
+  e.facing = -1; // always face player (player is usually to left)
+
+  // Random AI behavior
+  const r = Math.random();
+
+  if(e.hp < e.maxHP*0.3 && r < 0.1 && e.chakra >= 40) {
+    // Low HP: use jutsu
+    const j = JUTSUS[1]; // Chidori
+    e.chakra -= j.chakra;
+    spawnProjectile(false, 0);
+    e.state = 'attack';
+    e.aiTimer = 80;
+  } else if(dist > 160) {
+    // Move closer
+    e.vx = -2.5;
+    e.state = 'walk';
+    e.aiTimer = 20;
+  } else if(dist < 60) {
+    // Attack
+    if(r < 0.5) {
+      e.state = 'attack';
+      e.attackCD = 25;
+      e.aiTimer = 30;
+      // Check hit
+      if(dist < 70) {
+        dealDamage(p, 12 + Math.random()*8);
+        spawnParticles(p.x+p.w/2, p.y+p.h/2, '#FF8800', 8);
+      }
+    } else {
+      e.vx = 2;
+      e.state = 'walk';
+      e.aiTimer = 15;
+    }
+  } else {
+    // Random: move or block
+    if(r < 0.3) {
+      e.blocking = true;
+      e.state = 'block';
+      e.aiTimer = 30;
+      setTimeout(()=>{ e.blocking=false; if(e.state==='block') e.state='idle'; }, 500);
+    } else if(r < 0.6) {
+      e.vx = -1.5;
+      e.state = 'walk';
+      e.aiTimer = 25;
+    } else if(r < 0.75 && e.chakra >= 35) {
+      // Random jutsu attack
+      const j = JUTSUS[1];
+      if(e.chakra >= j.chakra) {
+        e.chakra -= j.chakra;
+        spawnProjectile(false, 0);
+        e.state = 'attack';
+      }
+      e.aiTimer = 60;
+      updateEnemyChakraHUD();
+    } else {
+      e.aiTimer = 15;
+    }
+  }
+
+  // Keep in bounds
+  if(e.x < 60)  { e.vx = 1.5; e.aiTimer = 20; }
+  if(e.x > 520) { e.vx = -1.5; e.aiTimer = 20; }
+}
+
+// ============================================================
+// GAME LOOP
+// ============================================================
+let animFrame;
+let lastTime = 0;
+let timerInterval;
+let chakraRegenTimer = 0;
+
+function gameLoop(ts) {
+  if(!gameRunning) return;
+  animFrame = requestAnimationFrame(gameLoop);
+
+  const dt = Math.min(ts - lastTime, 50);
+  lastTime = ts;
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Draw background
+  drawStage(ctx, selectedStage);
+
+  // Flash overlay
+  if(flashTimer > 0) {
+    ctx.fillStyle = flashColor;
+    ctx.globalAlpha = flashTimer/15 * 0.4;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.globalAlpha = 1;
+    flashTimer--;
+  }
+
+  // Update physics
+  updatePhysics(p, inp);
+  updatePhysics(e, {});
+
+  // Update AI
+  updateAI();
+
+  // Apply enemy movement
+  if(e.state !== 'ko' && e.state !== 'hurt' && e.vx !== 0) {
+    e.x += e.vx;
+    if(e.onGround && e.x !== Math.round(e.x)) e.state = 'walk';
+    e.vx *= 0.9;
+    if(Math.abs(e.vx) < 0.1) { e.vx = 0; if(e.state==='walk') e.state='idle'; }
+  }
+
+  // Player movement
+  if(inp.left  && p.state !== 'ko') { p.x -= 3; p.facing = -1; if(p.onGround) p.state='walk'; }
+  if(inp.right && p.state !== 'ko') { p.x += 3; p.facing = 1;  if(p.onGround) p.state='walk'; }
+  if(!inp.left && !inp.right && p.state === 'walk') p.state = 'idle';
+
+  // Clamp positions
+  p.x = Math.max(10, Math.min(canvas.width-p.w-10, p.x));
+  e.x = Math.max(10, Math.min(canvas.width-e.w-10, e.x));
+
+  // Attack collision (melee)
+  if(p.state === 'attack' && p.attackCD > 0) {
+    p.attackCD--;
+    if(p.attackCD === 18) {
+      const dist = Math.abs((p.x+p.w/2)-(e.x+e.w/2));
+      const pdmg = p.facing === 1 ? (p.x < e.x) : (p.x > e.x);
+      if(dist < 80 && pdmg) {
+        const crit = Math.random() < 0.15;
+        dealDamage(e, (inp.kick?18:12) + (crit?10:0), crit);
+        spawnParticles(e.x+e.w/2, e.y+e.h/2, crit?'#FFFF00':'#FF8844', crit?16:10);
+        spawnHitEffect(e.x+e.w/2, e.y+e.h/3, crit?'#FFFF00':'#FF8844');
+        flashTimer = 8; flashColor = '#FF4400';
+      }
+    }
+    if(p.attackCD <= 0) { p.state = 'idle'; }
+  }
+
+  // Update projectiles
+  for(let i=projectiles.length-1;i>=0;i--) {
+    const pr = projectiles[i];
+    pr.x += pr.vx; pr.y += pr.vy;
+    pr.life--;
+
+    // Collision
+    const target = pr.fromPlayer ? e : p;
+    const tx = target.x, ty = target.y, tw = target.w, th = target.h;
+    if(pr.x > tx && pr.x < tx+tw && pr.y > ty && pr.y < ty+th) {
+      dealDamage(target, pr.dmg, true);
+      spawnParticles(pr.x, pr.y, pr.color, 16, 6);
+      flashTimer = 12; flashColor = pr.color;
+      projectiles.splice(i,1);
+      continue;
+    }
+
+    if(pr.life <= 0 || pr.x < 0 || pr.x > canvas.width) {
+      projectiles.splice(i,1);
+    }
+  }
+
+  // Particles
+  for(let i=particles.length-1;i>=0;i--) {
+    const pt = particles[i];
+    pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.1;
+    pt.life++;
+    if(pt.life >= pt.maxLife) { particles.splice(i,1); continue; }
+    const alpha = 1 - pt.life/pt.maxLife;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = pt.color;
+    ctx.fillRect(pt.x-pt.size/2, pt.y-pt.size/2, pt.size, pt.size);
+    ctx.globalAlpha = 1;
+  }
+
+  // Draw effects
+  for(let i=effects.length-1;i>=0;i--) {
+    const ef = effects[i];
+    ef.life++;
+    if(ef.life>=ef.maxLife){effects.splice(i,1);continue;}
+    const a = 1-ef.life/ef.maxLife;
+    const r = ef.life/ef.maxLife * 25;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = ef.color;
+    ctx.beginPath(); ctx.arc(ef.x, ef.y, r, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // Draw projectiles
+  projectiles.forEach(pr => {
+    ctx.save();
+    ctx.font = `${pr.size}px serif`;
+    ctx.textAlign = 'center';
+    ctx.shadowColor = pr.color;
+    ctx.shadowBlur = 12;
+    ctx.fillText(pr.icon, pr.x, pr.y);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  });
+
+  // Draw characters
+  const scale = 3;
+  const floorY = canvas.height*0.65;
+
+  // Player shadow
+  drawShadow(ctx, p.x+p.w/2, floorY+2, 30);
+  // Enemy shadow
+  drawShadow(ctx, e.x+e.w/2, floorY+2, 28);
+
+  // Player
+  if(p.state !== 'ko') {
+    drawPixelChar(ctx, p.x, p.y - (p.onGround ? 0 : FLOOR_Y - p.y - 10), scale, {
+      facing: p.facing,
+      state: p.state,
+      frame: p.frame,
+      blocking: p.blocking,
+      isHurt: p.invince > 0 && p.state === 'hurt',
+    });
+  } else {
+    drawKO(ctx, p.x, p.y, scale, false);
+  }
+
+  // Enemy
+  if(e.state !== 'ko') {
+    drawPixelChar(ctx, e.x, e.y, scale, {
+      facing: e.facing,
+      state: e.state,
+      frame: e.frame,
+      isEnemy: true,
+      blocking: e.blocking,
+      isHurt: e.invince > 0 && e.state === 'hurt',
+    });
+  } else {
+    drawKO(ctx, e.x, e.y, scale, true);
+  }
+
+  // Invince flicker
+  if(p.invince > 0 && p.invince%4 < 2) {
+    // already handled in drawPixelChar
+  }
+  if(p.invince > 0) p.invince--;
+  if(e.invince > 0) e.invince--;
+
+  // Chakra regen
+  chakraRegenTimer++;
+  if(chakraRegenTimer % 60 === 0) {
+    p.chakra = Math.min(p.maxChakra, p.chakra + 5);
+    e.chakra = Math.min(e.maxChakra, e.chakra + 3);
+    updatePlayerChakraHUD();
+    updateEnemyChakraHUD();
+  }
+
+  // Jutsu CD update
+  for(let i=0;i<2;i++) {
+    if(p.jutsuCD[i] > 0) {
+      p.jutsuCD[i]--;
+      updateJutsuSlot(i);
+    }
+  }
+
+  // Combo timer
+  if(comboTimer > 0) {
+    comboTimer--;
+    if(comboTimer <= 0) {
+      combo = 0;
+      document.getElementById('comboDisplay').style.opacity = '0';
+    }
+  }
+
+  // Frame animation
+  p.frameTick++;
+  if(p.frameTick >= 8) { p.frame=(p.frame+1)%4; p.frameTick=0; }
+  e.frameTick++;
+  if(e.frameTick >= 8) { e.frame=(e.frame+1)%4; e.frameTick=0; }
+}
+
+function drawShadow(ctx, x, y, r) {
+  const g = ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,'rgba(0,0,0,0.4)');
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.ellipse(x, y, r, r*0.3, 0, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawKO(ctx, x, y, scale, isEnemy) {
+  ctx.save();
+  ctx.globalAlpha = 0.6;
+  ctx.font = `${16*scale}px serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('💀', x+20*scale/2, y+40*scale);
+  ctx.restore();
+  // KO text
+  ctx.save();
+  ctx.font = `bold ${8*scale}px 'Orbitron', monospace`;
+  ctx.fillStyle = isEnemy ? '#FF8800' : '#FF2244';
+  ctx.shadowColor = ctx.fillStyle;
+  ctx.shadowBlur = 10;
+  ctx.textAlign = 'center';
+  ctx.fillText('K.O.', x+20*scale/2, y-5);
+  ctx.restore();
+}
+
+function updatePhysics(obj, inp) {
+  if(!obj.onGround) {
+    obj.vy += GRAVITY;
+    obj.y += obj.vy;
+  }
+
+  const floorY = canvas.height*0.65 - obj.h;
+  if(obj.y >= floorY) {
+    obj.y = floorY;
+    obj.vy = 0;
+    obj.onGround = true;
+    if(obj.state === 'jump') obj.state = 'idle';
+  }
+}
+
+// ============================================================
+// INPUT HANDLERS
+// ============================================================
+function btnDown(action) {
+  if(!gameRunning) return;
+  inp[action] = true;
+  if(action === 'punch' || action === 'kick') {
+    if(p.state !== 'ko' && p.state !== 'hurt' && p.attackCD <= 0) {
+      p.state = 'attack';
+      p.attackCD = 25;
+    }
+  }
+  if(action === 'block') {
+    p.blocking = true;
+    p.state = 'block';
+  }
+  if(action === 'jump' && p.onGround) {
+    p.vy = -12;
+    p.onGround = false;
+    p.state = 'jump';
+  }
+}
+function btnUp(action) {
+  inp[action] = false;
+  if(action === 'block') { p.blocking = false; if(p.state==='block') p.state='idle'; }
+}
+
+function useJutsu(slotIdx) {
+  if(!gameRunning) return;
+  const jt = JUTSUS[selectedJutsus[slotIdx]];
+  if(!jt) return;
+  if(p.jutsuCD[slotIdx] > 0) return;
+  if(p.chakra < jt.chakra) { showAnnounce('CHAKRA TIDAK CUKUP!', 1200); return; }
+
+  p.chakra -= jt.chakra;
+  p.jutsuCD[slotIdx] = jt.cd * 60;
+  updatePlayerChakraHUD();
+  updateJutsuSlot(slotIdx);
+
+  spawnProjectile(true, slotIdx);
+  showJutsuName(jt.name, jt.color);
+  flashTimer = 15; flashColor = jt.color;
+  p.state = 'attack'; p.attackCD = 30;
+
+  // Screen shake
+  const gs = document.getElementById('gameCanvas');
+  gs.style.animation = 'none';
+  gs.offsetHeight;
+  gs.style.animation = 'screenShake 0.3s ease-out';
+}
+
+function updateJutsuSlot(idx) {
+  const slot = document.getElementById('jslot'+idx);
+  const cd = p.jutsuCD[idx];
+  const jt = JUTSUS[selectedJutsus[idx]];
+  if(!slot || !jt) return;
+  slot.innerHTML = cd > 0
+    ? `${jt.icon}<div class="jutsu-cooldown">${Math.ceil(cd/60)}</div><span class="jutsu-key">J${idx+1}</span>`
+    : `${jt.icon}<span class="jutsu-key">J${idx+1}</span>`;
+  slot.className = 'jutsu-slot' + (cd <= 0 ? ' ready' : '');
+}
+
+function showJutsuName(name, color) {
+  const el = document.createElement('div');
+  el.style.cssText = `
+    position:absolute; top:30%; left:50%; transform:translateX(-50%);
+    font-family:'Orbitron',sans-serif; font-size:clamp(0.8rem,3vw,1.2rem);
+    font-weight:900; color:${color}; text-shadow:0 0 20px ${color};
+    letter-spacing:2px; pointer-events:none; z-index:200;
+    animation: dmgFloat 1.5s ease-out forwards;
+    white-space:nowrap;
+  `;
+  el.textContent = '🌀 ' + name + ' 🌀';
+  document.getElementById('gameScreen').appendChild(el);
+  setTimeout(()=>el.remove(), 1500);
+}
+
+function updatePlayerChakraHUD() {
+  document.getElementById('p1Chakra').style.width = (p.chakra/p.maxChakra*100)+'%';
+}
+function updateEnemyChakraHUD() {
+  document.getElementById('enemyChakra').style.width = (e.chakra/e.maxChakra*100)+'%';
+}
+
+// Analog joystick
+let analogActive = false;
+let analogOrigin = {x:0,y:0};
+const base = ()=>document.getElementById('analogBase');
+const stick = ()=>document.getElementById('analogStick');
+
+function setupAnalog() {
+  const b = base();
+  b.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    analogActive = true;
+    const r = b.getBoundingClientRect();
+    analogOrigin = {x:r.left+r.width/2, y:r.top+r.height/2};
+  },{passive:false});
+  document.addEventListener('touchmove', e=>{
+    if(!analogActive) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const dx = t.clientX - analogOrigin.x;
+    const dy = t.clientY - analogOrigin.y;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    const maxR = base().offsetWidth * 0.35;
+    const clampedDist = Math.min(dist, maxR);
+    const angle = Math.atan2(dy, dx);
+    const sx = Math.cos(angle)*clampedDist;
+    const sy = Math.sin(angle)*clampedDist;
+    stick().style.transform = `translate(calc(-50% + ${sx}px), calc(-50% + ${sy}px))`;
+    inp.left  = dx < -maxR*0.3;
+    inp.right = dx > maxR*0.3;
+    if(inp.left || inp.right) {
+      if(p.state !== 'attack' && p.state !== 'ko' && p.onGround) p.state='walk';
+    }
+  },{passive:false});
+  document.addEventListener('touchend', e=>{
+    if(!analogActive) return;
+    analogActive = false;
+    stick().style.transform = 'translate(-50%, -50%)';
+    inp.left = inp.right = false;
+    if(p.state === 'walk') p.state = 'idle';
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', ev=>{
+    if(!gameRunning) return;
+    if(ev.key==='ArrowLeft'||ev.key==='a') { inp.left=true; }
+    if(ev.key==='ArrowRight'||ev.key==='d') { inp.right=true; }
+    if(ev.key==='z'||ev.key==='Z') btnDown('punch');
+    if(ev.key==='x'||ev.key==='X') btnDown('kick');
+    if(ev.key==='c'||ev.key==='C') btnDown('block');
+    if(ev.key===' ') { ev.preventDefault(); btnDown('jump'); }
+    if(ev.key==='q'||ev.key==='Q') useJutsu(0);
+    if(ev.key==='e'||ev.key==='E') useJutsu(1);
+  });
+  document.addEventListener('keyup', ev=>{
+    if(ev.key==='ArrowLeft'||ev.key==='a') { inp.left=false; if(p.state==='walk')p.state='idle'; }
+    if(ev.key==='ArrowRight'||ev.key==='d') { inp.right=false; if(p.state==='walk')p.state='idle'; }
+    if(ev.key==='c'||ev.key==='C') btnUp('block');
+  });
+}
+
+// ============================================================
+// ROUND MANAGEMENT
+// ============================================================
+function startGame() {
+  gameRunning = false;
+  cancelAnimationFrame(animFrame);
+  clearInterval(timerInterval);
+
+  canvas = document.getElementById('gameCanvas');
+  ctx = canvas.getContext('2d');
+
+  // Reset
+  const stg = STAGES[selectedStage];
+  p.x=80; p.y=200; p.vy=0; p.vx=0;
+  p.hp=p.maxHP=100; p.chakra=p.maxChakra=100;
+  p.state='idle'; p.frame=0; p.facing=1;
+  p.blocking=false; p.attackCD=0; p.jutsuCD=[0,0]; p.invince=0; p.onGround=true;
+
+  const ehp = Math.floor(100 * stg.hpMul);
+  e.x=460; e.y=200; e.vy=0; e.vx=0;
+  e.hp=e.maxHP=ehp; e.chakra=e.maxChakra=60;
+  e.state='idle'; e.frame=0; e.facing=-1;
+  e.blocking=false; e.attackCD=0; e.aiTimer=30; e.invince=0; e.onGround=true;
+
+  projectiles=[]; particles=[]; effects=[];
+  combo=0; comboTimer=0; gameScore=0; knockdowns=0;
+  roundNum=1; roundTimer=60;
+
+  document.getElementById('enemyName').textContent = stg.enemyName;
+  document.getElementById('p1HP').style.width = '100%';
+  document.getElementById('enemyHP').style.width = '100%';
+  document.getElementById('p1Chakra').style.width = '100%';
+  document.getElementById('enemyChakra').style.width = '100%';
+  document.getElementById('roundNum').textContent = roundNum;
+  document.getElementById('timer').textContent = roundTimer;
+
+  // Jutsu HUD
+  for(let i=0;i<2;i++) {
+    const jt = JUTSUS[selectedJutsus[i]];
+    if(jt) {
+      document.getElementById('jslot'+i).innerHTML = `${jt.icon}<span class="jutsu-key">J${i+1}</span>`;
+      document.getElementById('j'+i+'Icon'||'j1Icon').textContent = jt.icon;
+    }
+  }
+  document.getElementById('j1Icon').textContent = JUTSUS[selectedJutsus[0]]?.icon||'🔥';
+  document.getElementById('j2Icon').textContent = JUTSUS[selectedJutsus[1]]?.icon||'⚡';
+
+  showAnnounce('ROUND ' + roundNum, 1500, ()=>{
+    showAnnounce('FIGHT!', 800, ()=>{
+      gameRunning = true;
+      lastTime = performance.now();
+      animFrame = requestAnimationFrame(gameLoop);
+
+      // Timer
+      timerInterval = setInterval(()=>{
+        if(!gameRunning) return;
+        roundTimer--;
+        document.getElementById('timer').textContent = roundTimer;
+        if(roundTimer <= 10) document.getElementById('timer').style.color='#FF2244';
+        else document.getElementById('timer').style.color='var(--gold)';
+        if(roundTimer <= 0) {
+          // Time up
+          if(p.hp > e.hp) checkRoundEnd(true);
+          else checkRoundEnd(false);
+        }
+      }, 1000);
+    });
+  });
+
+  setupAnalog();
+}
+
+function checkRoundEnd(playerWon) {
+  if(!gameRunning) return;
+  gameRunning = false;
+  clearInterval(timerInterval);
+
+  if(playerWon) {
+    if(roundNum < 3 && selectedStage < 5) {
+      showAnnounce('KO!', 1000, ()=>{
+        setTimeout(()=>endGame(true), 500);
+      });
+    } else {
+      showAnnounce('KO!', 1000, ()=>endGame(true));
+    }
+  } else {
+    showAnnounce('KO!', 1000, ()=>endGame(false));
+  }
+}
+
+function endGame(won) {
+  cancelAnimationFrame(animFrame);
+  const goEl = document.getElementById('goTitle');
+  goEl.textContent = won ? '🏆 VICTORY!' : '💀 DEFEAT!';
+  goEl.className = 'go-title ' + (won?'win':'lose');
+
+  document.getElementById('goStats').innerHTML = `
+    Stage: <span>${STAGES[selectedStage].name}</span><br>
+    Score: <span>${gameScore.toLocaleString()}</span><br>
+    Combo Terbesar: <span>${combo} HIT</span><br>
+    Knockdowns: <span>${knockdowns}</span>
+  `;
+  showScreen('gameOverScreen');
+}
+
+function restartGame() {
+  showScreen('gameScreen');
+  startGame();
+}
+
+// ============================================================
+// ANNOUNCE
+// ============================================================
+function showAnnounce(text, duration, cb) {
+  const el = document.getElementById('announce');
+  const t  = document.getElementById('announceText');
+  t.textContent = text;
+  el.style.display = 'flex';
+  setTimeout(()=>{
+    el.style.display = 'none';
+    if(cb) cb();
+  }, duration);
+}
+
+// ============================================================
+// SCREENS
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id === 'gameScreen') startGame();
+}
+
+function selectStage(idx) {
+  selectedStage = idx;
+  showScreen('gameScreen');
+}
+
+// Jutsu toggle
+function toggleJutsu(idx) {
+  const pos = selectedJutsus.indexOf(idx);
+  if(pos >= 0) {
+    selectedJutsus.splice(pos,1);
+    document.getElementById('jcard'+idx).classList.remove('selected');
+  } else if(selectedJutsus.length < 2) {
+    selectedJutsus.push(idx);
+    document.getElementById('jcard'+idx).classList.add('selected');
+  } else {
+    // Replace oldest
+    const old = selectedJutsus.shift();
+    document.getElementById('jcard'+old).classList.remove('selected');
+    selectedJutsus.push(idx);
+    document.getElementById('jcard'+idx).classList.add('selected');
+  }
+  document.getElementById('jutsuHint').textContent =
+    `Pilih 2 jutsu (${selectedJutsus.length} dipilih)`;
+}
+
+function showHowTo() {
+  alert(
+    `🕹️ CARA MAIN BFL ADVENTURE:\n\n` +
+    `📱 Mobile:\n` +
+    `• Analog kiri = Gerak kiri/kanan\n` +
+    `• PUNCH = Tinju\n` +
+    `• KICK = Tendang\n` +
+    `• BLOCK = Tangkis serangan\n` +
+    `• JUMP = Lompat\n` +
+    `• J1/J2 = Gunakan Jutsu\n\n` +
+    `⌨️ Keyboard:\n` +
+    `• A/D atau ← → = Gerak\n` +
+    `• Z = Punch, X = Kick\n` +
+    `• C = Block, Spasi = Jump\n` +
+    `• Q = Jutsu 1, E = Jutsu 2\n\n` +
+    `⚡ Tips:\n` +
+    `• Chakra terisi otomatis\n` +
+    `• Combo melipatgandakan score\n` +
+    `• Block saat musuh menyerang`
+  );
+}
+
+// ============================================================
+// TITLE CANVAS PREVIEW
+// ============================================================
+window.addEventListener('load', ()=>{
+  titleCanvas = document.getElementById('titleChar');
+  titleCtx = titleCanvas.getContext('2d');
+  function animTitle() {
+    titleCtx.clearRect(0,0,80,96);
+    const frame = Math.floor(Date.now()/200)%4;
+    drawPixelChar(titleCtx, 10, 0, 2.5, {facing:1, state:'idle', frame});
+    requestAnimationFrame(animTitle);
+  }
+  animTitle();
+});
+</script>
+<style>
+@keyframes screenShake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-4px)}
+  40%{transform:translateX(4px)}
+  60%{transform:translateX(-3px)}
+  80%{transform:translateX(3px)}
+}
+</style>
+</body>
+</html>
