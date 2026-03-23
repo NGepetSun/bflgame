@@ -112,23 +112,23 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  background:rgba(0,0,0,0.90);
+  background:rgba(0,0,0,0.92);
   flex-shrink:0;
-  padding:4px 14px;
-  padding-left:max(14px, env(safe-area-inset-left));
-  padding-right:max(14px, env(safe-area-inset-right));
-  padding-bottom:max(4px, env(safe-area-inset-bottom));
-  border-top:1px solid #0af2;
-  gap:8px;
+  padding:6px 18px;
+  padding-left:max(18px, env(safe-area-inset-left));
+  padding-right:max(18px, env(safe-area-inset-right));
+  padding-bottom:max(6px, env(safe-area-inset-bottom));
+  border-top:2px solid rgba(0,180,255,0.35);
+  gap:10px;
 }
-#dpad{display:flex;gap:5px;align-items:center;}
+#dpad{display:flex;gap:10px;align-items:center;}
 
 .btn{
-  background:rgba(0,200,255,0.08);
-  border:1.5px solid rgba(0,200,255,0.3);
-  border-radius:10px;color:#0ef;
-  font-family:'Orbitron',monospace;font-size:18px;
-  width:50px;height:50px;
+  background:rgba(0,200,255,0.10);
+  border:2px solid rgba(0,200,255,0.45);
+  border-radius:14px;color:#0ef;
+  font-family:'Orbitron',monospace;font-size:26px;
+  width:72px;height:72px;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;user-select:none;-webkit-user-select:none;
   box-shadow:0 0 8px #0af2;transition:background 0.07s,border-color 0.07s,box-shadow 0.07s;
@@ -136,25 +136,44 @@ body{
 .btn.pressed,.btn:active{
   background:rgba(0,200,255,0.35);border-color:#0ef;box-shadow:0 0 18px #0af8;
 }
-#action-btns{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;}
+#action-btns{display:flex;gap:10px;align-items:center;flex-wrap:nowrap;}
 .btn-atk{
-  background:rgba(255,60,0,0.12);border-color:rgba(255,80,0,0.5);
-  color:#f84;font-size:9px;width:54px;height:54px;
+  background:rgba(255,60,0,0.15);border-color:rgba(255,80,0,0.6);
+  color:#f84;font-size:11px;width:80px;height:80px;border-radius:50%;
+  box-shadow:0 0 12px #f803,inset 0 0 8px #f801;
 }
 .btn-atk.pressed{background:rgba(255,60,0,0.4);border-color:#f84;box-shadow:0 0 20px #f806;}
 .btn-jump{
-  background:rgba(180,0,255,0.12);border-color:rgba(180,0,255,0.5);
-  color:#c4f;font-size:9px;width:54px;height:54px;
+  background:rgba(180,0,255,0.15);border-color:rgba(180,0,255,0.6);
+  color:#c4f;font-size:11px;width:80px;height:80px;border-radius:50%;
+  box-shadow:0 0 12px #c4f3,inset 0 0 8px #c4f1;
 }
 .btn-jump.pressed{background:rgba(180,0,255,0.4);border-color:#c4f;box-shadow:0 0 20px #c4f8;}
 .btn-run{
-  background:rgba(0,200,100,0.12);border-color:rgba(0,200,100,0.5);
-  color:#0f8;font-size:9px;width:46px;height:46px;
+  background:rgba(0,200,100,0.15);border-color:rgba(0,200,100,0.6);
+  color:#0f8;font-size:10px;width:66px;height:66px;border-radius:12px;
+  box-shadow:0 0 10px #0f83,inset 0 0 6px #0f81;
 }
 .btn-run.pressed{background:rgba(0,200,100,0.4);border-color:#0f8;}
 .btn-mute{
-  background:rgba(255,255,0,0.08);border-color:rgba(255,255,0,0.3);
-  color:#ff0;font-size:13px;width:38px;height:38px;
+  background:rgba(255,255,0,0.10);border-color:rgba(255,255,0,0.4);
+  color:#ff0;font-size:16px;width:52px;height:52px;border-radius:10px;
+}
+#analog-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  flex-shrink:0;
+}
+#analogCanvas{
+  border-radius:50%;
+  background:rgba(0,0,0,0.5);
+  border:2px solid rgba(255,80,0,0.4);
+  box-shadow:0 0 12px rgba(255,80,0,0.25),inset 0 0 20px rgba(0,0,0,0.6);
+  touch-action:none;cursor:crosshair;
+  display:block;
+}
+#analog-label{
+  font-family:'Orbitron',monospace;font-size:6px;
+  color:rgba(255,120,40,0.7);letter-spacing:1px;
 }
 
 /* ── OVERLAY ── */
@@ -203,15 +222,21 @@ body{
 </div>
 <canvas id="gameCanvas"></canvas>
 <div id="controls">
+  <!-- LEFT: D-pad -->
   <div id="dpad">
     <div class="btn" id="btn-left">◀</div>
     <div class="btn" id="btn-right">▶</div>
   </div>
+  <!-- CENTER: extra buttons -->
   <div id="action-btns">
     <div class="btn btn-run" id="btn-run">RUN</div>
-    <div class="btn btn-atk" id="btn-atk">🔫FIRE</div>
     <div class="btn btn-jump" id="btn-jump">JUMP</div>
     <div class="btn btn-mute" id="btn-mute" onclick="toggleMute()">🔊</div>
+  </div>
+  <!-- RIGHT: Analog aim stick -->
+  <div id="analog-wrap">
+    <canvas id="analogCanvas" width="140" height="140"></canvas>
+    <div id="analog-label">AIM &amp; FIRE</div>
   </div>
 </div>
 </div><!-- end game-wrapper -->
@@ -339,7 +364,125 @@ document.addEventListener('keyup',e=>{
 // ── HELPERS ──────────────────────────────────────────────────
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+function lineIntersectsRect(x1,y1,x2,y2,rx,ry,rw,rh){
+  // Check if line segment intersects rectangle
+  // First do AABB check for speed
+  if(Math.min(x1,x2)>rx+rw||Math.max(x1,x2)<rx||Math.min(y1,y2)>ry+rh||Math.max(y1,y2)<ry)return false;
+  // Point in rect check
+  function ptInRect(px,py){return px>=rx&&px<=rx+rw&&py>=ry&&py<=ry+rh;}
+  if(ptInRect(x1,y1)||ptInRect(x2,y2))return true;
+  // Line vs 4 edges
+  function seg(ax,ay,bx,by,cx,cy,dx,dy){
+    const d1=(dx-cx)*(ay-cy)-(dy-cy)*(ax-cx);
+    const d2=(dx-cx)*(by-cy)-(dy-cy)*(bx-cx);
+    const d3=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax);
+    const d4=(bx-ax)*(dy-ay)-(by-ay)*(dx-ax);
+    if(((d1>0&&d2<0)||(d1<0&&d2>0))&&((d3>0&&d4<0)||(d3<0&&d4>0)))return true;
+    return false;
+  }
+  return seg(x1,y1,x2,y2,rx,ry,rx+rw,ry)||seg(x1,y1,x2,y2,rx+rw,ry,rx+rw,ry+rh)||seg(x1,y1,x2,y2,rx,ry+rh,rx+rw,ry+rh)||seg(x1,y1,x2,y2,rx,ry,rx,ry+rh);
+}
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+
+// ── ANALOG AIM STICK ─────────────────────────────────────────
+const analogCanvas = document.getElementById('analogCanvas');
+const actx2 = analogCanvas ? analogCanvas.getContext('2d') : null;
+const AW = 140, AH = 140;
+const ACX = AW/2, ACY = AH/2;
+const OUTER_R = AW/2 - 6;
+const INNER_R = 26;
+let analogActive = false;
+let analogAngle = 0;
+let analogDist  = 0;
+let analogKnobX = ACX, analogKnobY = ACY;
+let analogTouchId = null;
+
+function drawAnalog(){
+  if(!actx2) return;
+  actx2.clearRect(0,0,AW,AH);
+  // outer ring
+  actx2.strokeStyle = analogActive ? 'rgba(255,120,40,0.85)' : 'rgba(255,80,0,0.4)';
+  actx2.lineWidth = 2;
+  actx2.beginPath();actx2.arc(ACX,ACY,OUTER_R,0,Math.PI*2);actx2.stroke();
+  // guides
+  actx2.strokeStyle='rgba(255,80,0,0.15)';actx2.lineWidth=1;
+  actx2.beginPath();actx2.moveTo(ACX,ACY-OUTER_R);actx2.lineTo(ACX,ACY+OUTER_R);actx2.stroke();
+  actx2.beginPath();actx2.moveTo(ACX-OUTER_R,ACY);actx2.lineTo(ACX+OUTER_R,ACY);actx2.stroke();
+  // dashed line center to knob
+  if(analogActive && analogDist>0.1){
+    actx2.strokeStyle='rgba(255,150,50,0.55)';actx2.lineWidth=2;
+    actx2.setLineDash([3,3]);
+    actx2.beginPath();actx2.moveTo(ACX,ACY);actx2.lineTo(analogKnobX,analogKnobY);actx2.stroke();
+    actx2.setLineDash([]);
+  }
+  // knob glow
+  if(analogActive){
+    const g=actx2.createRadialGradient(analogKnobX,analogKnobY,2,analogKnobX,analogKnobY,INNER_R+8);
+    g.addColorStop(0,'rgba(255,120,40,0.5)');g.addColorStop(1,'rgba(0,0,0,0)');
+    actx2.fillStyle=g;actx2.beginPath();actx2.arc(analogKnobX,analogKnobY,INNER_R+8,0,Math.PI*2);actx2.fill();
+  }
+  // knob fill
+  const g2=actx2.createRadialGradient(analogKnobX-4,analogKnobY-4,2,analogKnobX,analogKnobY,INNER_R);
+  g2.addColorStop(0,analogActive?'rgba(255,160,60,0.95)':'rgba(255,80,20,0.55)');
+  g2.addColorStop(1,analogActive?'rgba(180,60,0,0.9)':'rgba(120,40,0,0.35)');
+  actx2.fillStyle=g2;actx2.beginPath();actx2.arc(analogKnobX,analogKnobY,INNER_R,0,Math.PI*2);actx2.fill();
+  actx2.strokeStyle=analogActive?'rgba(255,180,80,0.9)':'rgba(255,100,30,0.45)';
+  actx2.lineWidth=1.5;actx2.beginPath();actx2.arc(analogKnobX,analogKnobY,INNER_R,0,Math.PI*2);actx2.stroke();
+  // gun emoji
+  actx2.font='bold 14px serif';actx2.textAlign='center';actx2.textBaseline='middle';
+  actx2.fillStyle=analogActive?'#fff':'rgba(255,255,255,0.45)';
+  actx2.fillText('🔫',analogKnobX,analogKnobY);
+  actx2.textBaseline='alphabetic';
+}
+
+function getAnalogXY(e){
+  if(!analogCanvas) return {x:ACX,y:ACY};
+  const rect=analogCanvas.getBoundingClientRect();
+  const scX=AW/rect.width, scY=AH/rect.height;
+  if(e.changedTouches){
+    let t=e.changedTouches[0];
+    for(let i=0;i<e.changedTouches.length;i++){if(e.changedTouches[i].identifier===analogTouchId){t=e.changedTouches[i];break;}}
+    return{x:(t.clientX-rect.left)*scX, y:(t.clientY-rect.top)*scY};
+  }
+  return{x:(e.clientX-rect.left)*scX, y:(e.clientY-rect.top)*scY};
+}
+function doAnalogUpdate(e){
+  const p=getAnalogXY(e);
+  const dx=p.x-ACX,dy=p.y-ACY,d=Math.sqrt(dx*dx+dy*dy);
+  const maxR=OUTER_R-INNER_R;
+  analogDist=Math.min(1,d/maxR);
+  analogAngle=Math.atan2(dy,dx);
+  const cl=Math.min(d,maxR);
+  analogKnobX=ACX+Math.cos(analogAngle)*cl;
+  analogKnobY=ACY+Math.sin(analogAngle)*cl;
+  if(analogDist>0.12){
+    P.gunAngle=analogAngle; P.gunAnalogActive=true;
+    if(dx>5)P.dir=1; else if(dx<-5)P.dir=-1;
+  } else { P.gunAnalogActive=false; }
+}
+function onAStart(e){
+  e.preventDefault();analogActive=true;
+  if(e.changedTouches)analogTouchId=e.changedTouches[0].identifier;
+  doAnalogUpdate(e); mKeys.atk=true;
+}
+function onAMove(e){ e.preventDefault(); if(analogActive)doAnalogUpdate(e); }
+function onAEnd(e){
+  e.preventDefault();analogActive=false;mKeys.atk=false;
+  analogKnobX=ACX;analogKnobY=ACY;analogDist=0;
+  P.gunAnalogActive=false;analogTouchId=null;
+}
+if(analogCanvas){
+  analogCanvas.addEventListener('touchstart',onAStart,{passive:false});
+  analogCanvas.addEventListener('touchmove', onAMove,{passive:false});
+  analogCanvas.addEventListener('touchend',  onAEnd,{passive:false});
+  analogCanvas.addEventListener('touchcancel',onAEnd,{passive:false});
+  analogCanvas.addEventListener('mousedown',onAStart);
+  analogCanvas.addEventListener('mousemove',e=>{if(e.buttons&&analogActive)onAMove(e);});
+  analogCanvas.addEventListener('mouseup',  onAEnd);
+  analogCanvas.addEventListener('mouseleave',onAEnd);
+}
+(function analogLoop(){ drawAnalog(); requestAnimationFrame(analogLoop); })();
+
 
 // ── CONSTANTS ────────────────────────────────────────────────
 const T=32;
@@ -364,6 +507,8 @@ const P={
   atkHitbox:null,
   // SS
   ss:false,ssTimer:0,ssDuration:600,
+  // Analog gun angle (radians, 0 = right)
+  gunAngle:0, gunAnalogActive:false,
 };
 
 // ── LEVEL DATA ────────────────────────────────────────────────
@@ -720,34 +865,37 @@ function drawChar(p){
   const fa1=inAir?-0.5:wa*0.55, fa2=inAir?0.4:-wa*0.55;
   const aa1=inAir?0.7:-wa*0.55, aa2=inAir?-0.5:wa*0.55;
 
-  // ── AK-47 ──────────────────────────────────────────────────
+  // ── AK-47 (analog aim) ──────────────────────────────────────
   const atkProgress = p.attacking ? (1 - p.atkTimer/18) : 0;
-  // AK-47 held at right side, pointing forward in dir
-  const gunX = p.dir>0 ? px+14 : px+16;
-  const gunY = py + 26;
   const gunRecoil = p.attacking ? Math.sin(atkProgress*Math.PI)*3 : 0;
+  // Pivot: held at chest/shoulder level
+  const gunPivotX = px + 15;
+  const gunPivotY = py + 26 - gunRecoil;
+  // Gun angle: analog if active, else flat in player dir
+  const gunAng = p.gunAnalogActive ? p.gunAngle : (p.dir>0 ? 0 : Math.PI);
 
   ctx.save();
-  ctx.translate(gunX, gunY - gunRecoil);
-  if(p.dir<0) ctx.scale(-1,1);
+  ctx.translate(gunPivotX, gunPivotY);
+  ctx.rotate(gunAng);
+  // flip gun sprite upside when aiming down-left to look natural
+  if(p.gunAnalogActive && Math.abs(gunAng) > Math.PI*0.5 && Math.abs(gunAng) < Math.PI*1.5){
+    ctx.scale(1,-1);
+  }
 
-  // ── Muzzle flash ──
+  // ── Muzzle flash (at barrel tip, x=44 in local coords) ──
   if(p.attacking && atkProgress < 0.35){
     const mfAlpha = 1 - atkProgress/0.35;
-    ctx.shadowColor='#ff8800';
-    ctx.shadowBlur=18*mfAlpha;
-    ctx.fillStyle=`rgba(255,220,80,${mfAlpha*0.9})`;
+    ctx.shadowColor='#ff8800';ctx.shadowBlur=20*mfAlpha;
+    ctx.fillStyle=`rgba(255,220,80,${mfAlpha*0.95})`;
     ctx.beginPath();
-    // spiky muzzle flash shape
-    for(let mi=0;mi<6;mi++){
-      const ma = mi*(Math.PI/3);
-      const mr = mi%2===0 ? 10 : 5;
-      mi===0 ? ctx.moveTo(38+Math.cos(ma)*mr, Math.sin(ma)*mr)
-             : ctx.lineTo(38+Math.cos(ma)*mr, Math.sin(ma)*mr);
+    for(let mi=0;mi<7;mi++){
+      const ma=mi*(Math.PI*2/7);
+      const mr=mi%2===0?13:6;
+      mi===0?ctx.moveTo(44+Math.cos(ma)*mr,Math.sin(ma)*mr):ctx.lineTo(44+Math.cos(ma)*mr,Math.sin(ma)*mr);
     }
     ctx.closePath();ctx.fill();
-    ctx.fillStyle=`rgba(255,255,200,${mfAlpha})`;
-    ctx.beginPath();ctx.arc(38,0,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=`rgba(255,255,220,${mfAlpha})`;
+    ctx.beginPath();ctx.arc(44,0,5,0,Math.PI*2);ctx.fill();
     ctx.shadowBlur=0;
   }
 
@@ -818,27 +966,31 @@ function drawChar(p){
 
   ctx.restore();
 
-  // ── Bullet trail during attack ──
+  // ── Bullet trail (along gunAngle) ──
   if(p.attacking && atkProgress > 0.05 && atkProgress < 0.5){
     const trailAlpha = 0.7*(1-atkProgress/0.5);
-    const trailStartX = p.dir>0 ? px+56 : px-22;
-    const trailEndX   = p.dir>0 ? px+56+60+atkProgress*80 : px-22-60-atkProgress*80;
+    const trailLen = 80 + atkProgress*100;
+    // Muzzle world position
+    const mwx = gunPivotX + Math.cos(gunAng)*44;
+    const mwy = gunPivotY + Math.sin(gunAng)*44;
     ctx.save();
     ctx.globalAlpha = trailAlpha;
     ctx.strokeStyle = '#ffee88';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = '#ff8800';
-    ctx.shadowBlur = 6;
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#ff8800';ctx.shadowBlur = 7;
     ctx.beginPath();
-    ctx.moveTo(trailStartX, gunY - gunRecoil + 2);
-    ctx.lineTo(trailEndX,   gunY - gunRecoil + 2);
+    ctx.moveTo(mwx, mwy);
+    ctx.lineTo(mwx + Math.cos(gunAng)*trailLen, mwy + Math.sin(gunAng)*trailLen);
     ctx.stroke();
-    // shell casing eject
+    ctx.shadowBlur=0;
+    // shell casing eject (perpendicular to gun)
     if(atkProgress < 0.2){
-      const sx = p.dir>0 ? px+20 : px+12;
-      const sy = gunY - gunRecoil - 4;
+      const perpAng = gunAng - Math.PI/2;
+      const sx = gunPivotX + Math.cos(gunAng)*20 + Math.cos(perpAng)*3;
+      const sy = gunPivotY + Math.sin(gunAng)*20 + Math.sin(perpAng)*3;
       ctx.fillStyle = '#d4a017';
-      ctx.fillRect(sx + (p.dir>0?0:atkProgress*20), sy - atkProgress*12, 4, 7);
+      ctx.save();ctx.translate(sx,sy);ctx.rotate(perpAng+atkProgress*3);
+      ctx.fillRect(-2,-3,4,7);ctx.restore();
     }
     ctx.restore();
   }
@@ -1145,17 +1297,25 @@ function update(){
     if(P.atkCooldown>0)P.atkCooldown--;
     if(isAtk&&P.atkCooldown<=0&&!P.attacking){
       P.attacking=true;P.atkTimer=18;P.atkCooldown=25;
-      const atkX=P.dir>0?P.x+P.w:P.x-50;
-      P.atkHitbox={x:atkX,y:P.y+10,w:115,h:P.h-20};
-      spawnMuzzle(P.dir>0?P.x+P.w+55:P.x-55,P.y+26,P.dir);
+      const gunAng2=P.gunAnalogActive?P.gunAngle:(P.dir>0?0:Math.PI);
+      const gpx=P.x+15,gpy=P.y+26,bRange=120;
+      const bx1=gpx+Math.cos(gunAng2)*8,by1=gpy+Math.sin(gunAng2)*8;
+      const bx2=gpx+Math.cos(gunAng2)*bRange,by2=gpy+Math.sin(gunAng2)*bRange;
+      P.atkHitbox={x:Math.min(bx1,bx2)-12,y:Math.min(by1,by2)-12,w:Math.abs(bx2-bx1)+24,h:Math.abs(by2-by1)+24,ax1:bx1,ay1:by1,ax2:bx2,ay2:by2};
+      spawnMuzzle(gpx+Math.cos(gunAng2)*44,gpy+Math.sin(gunAng2)*44,P.dir);
       Audio.sfxAtk&&Audio.sfxAtk();
       // Hit enemies
       enemies.forEach(e=>{
         if(e.dead)return;
-        if(overlap(P.atkHitbox,e)){
+        // Check AABB first, then line-vs-rect for precision
+        const hb = P.atkHitbox;
+        const lineHit = hb.ax1!==undefined ? lineIntersectsRect(hb.ax1,hb.ay1,hb.ax2,hb.ay2,e.x,e.y,e.w,e.h) : overlap(hb,e);
+        if(lineHit){
           const dmg=PSTATS.atk*(SS.active?3:1);
           e.hp-=dmg;e.hitFlash=8;
-          e.vx=P.dir*3;
+          // knockback in bullet direction
+          const gunAng3 = P.gunAnalogActive ? P.gunAngle : (P.dir>0?0:Math.PI);
+          e.vx=Math.cos(gunAng3)*4; e.vy=Math.sin(gunAng3)*2-1;
           showDmg(e.x+e.w/2,e.y,dmg,'#ffd700',SS.active);
           spawnBlood(e.x+e.w/2,e.y+e.h/2,e.color);
           Audio.sfxStomp();
@@ -1308,6 +1468,25 @@ function draw(){
   particles.forEach(p=>drawParticle(p));
   enemies.forEach(e=>drawEnemy(e));
   drawGoal(goalX);
+  // ── Aim crosshair ──
+  if(!P.dead && (P.gunAnalogActive || P.attacking)){
+    const gAng = P.gunAnalogActive ? P.gunAngle : (P.dir>0?0:Math.PI);
+    const gpwx = P.x - camX + 15;
+    const gpwy = P.y + 26;
+    const chDist = 70 + (P.attacking?30:0);
+    const chx = gpwx + Math.cos(gAng)*chDist;
+    const chy = gpwy + Math.sin(gAng)*chDist;
+    const chAlpha = P.attacking ? 0.9 : 0.5;
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,180,50,${chAlpha})`;
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = '#ff8800';ctx.shadowBlur = 6;
+    const cs = 8;
+    ctx.beginPath();ctx.moveTo(chx-cs,chy);ctx.lineTo(chx+cs,chy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(chx,chy-cs);ctx.lineTo(chx,chy+cs);ctx.stroke();
+    ctx.beginPath();ctx.arc(chx,chy,5,0,Math.PI*2);ctx.stroke();
+    ctx.shadowBlur=0;ctx.restore();
+  }
   if(!P.dead)drawChar(P);
   // attack hitbox debug (optional, disable in prod)
   // if(P.atkHitbox){ctx.strokeStyle='#ff04';ctx.strokeRect(P.atkHitbox.x-camX,P.atkHitbox.y,P.atkHitbox.w,P.atkHitbox.h);}
